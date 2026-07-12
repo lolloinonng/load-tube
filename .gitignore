@@ -7,3 +7,4 @@ coverage/
 .env
 .env.local
 .DS_Store
+backend/*-player-script.js
