@@ -1,3 +1,8 @@
+databases:
+  - name: load-tube-db
+    plan: free
+    ipAllowList: []
+
 services:
   - type: web
     name: load-tube-backend
@@ -19,8 +24,3 @@ services:
         value: https://load-tube.vercel.app
       - key: PORT
         value: "4000"
-
-  - type: postgresql
-    name: load-tube-db
-    plan: free
-    ipAllowList: []
