@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: load-tube-backend
+    runtime: docker
+    repo: https://github.com/lolloinonng/load-tube
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: load-tube-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: CORS_ORIGIN
+        value: https://load-tube.vercel.app
+      - key: PORT
+        value: "4000"
+
+  - type: postgresql
+    name: load-tube-db
+    plan: free
+    ipAllowList: []

@@ -11,9 +11,11 @@ import { removeTempFile } from '../utils/cleanup';
 
 function findFfmpeg(): string | null {
   const candidates = [
+    '/usr/bin/ffmpeg',
+    '/usr/local/bin/ffmpeg',
+    'ffmpeg',
     'C:\\Users\\loren\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.1-essentials_build\\bin\\ffmpeg.exe',
     'C:\\ProgramData\\chocolatey\\bin\\ffmpeg.exe',
-    'ffmpeg',
     'C:\\ffmpeg\\bin\\ffmpeg.exe',
   ];
   for (const c of candidates) {
