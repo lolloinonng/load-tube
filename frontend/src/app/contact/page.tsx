@@ -87,7 +87,7 @@ export default function ContactPage() {
           <div className="glass-panel rounded-xl p-6 light-bleed">
             <span className="material-symbols-outlined text-primary hand-drawn-icon" style={{ fontSize: '24px' }}>mail</span>
             <h3 className="font-semibold text-on-surface mt-2 text-sm">Email</h3>
-            <p className="text-sm text-on-surface-variant mt-1">support@load.tube</p>
+            <p className="text-sm text-on-surface-variant mt-1">lollino066@gmail.com</p>
           </div>
           <div className="glass-panel rounded-xl p-6 light-bleed">
             <span className="material-symbols-outlined text-primary hand-drawn-icon" style={{ fontSize: '24px' }}>chat</span>
