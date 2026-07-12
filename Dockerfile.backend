@@ -21,12 +21,11 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package*.json ./
 
-RUN mkdir -p temp
+RUN mkdir -p temp /data
 
 EXPOSE 4000
 
 ENV NODE_ENV=production
 ENV TEMP_DIR=temp
-ENV DATABASE_URL="file:./dev.db"
 
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate 2>/dev/null; node dist/server.js"]

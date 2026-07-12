@@ -1,0 +1,17 @@
+app = "load-tube"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  TEMP_DIR = "/app/temp"
+  DATABASE_URL = "file:/data/dev.db"
+  PORT = "4000"
+
+[http_service]
+  internal_port = 4000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 0
