@@ -1,8 +1,3 @@
-databases:
-  - name: load-tube-db
-    plan: free
-    ipAllowList: []
-
 services:
   - type: web
     name: load-tube-backend
@@ -11,9 +6,7 @@ services:
     dockerfilePath: ./Dockerfile
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: load-tube-db
-          property: connectionString
+        value: file:./dev.db
       - key: JWT_SECRET
         generateValue: true
       - key: ADMIN_USERNAME

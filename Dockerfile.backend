@@ -6,7 +6,6 @@ COPY backend/package*.json ./
 RUN npm ci
 COPY backend/ .
 
-RUN sed -i 's/provider = "sqlite"/provider = "postgresql"/' prisma/schema.prisma
 RUN npx prisma generate
 RUN npm run build
 
@@ -28,5 +27,6 @@ EXPOSE 4000
 
 ENV NODE_ENV=production
 ENV TEMP_DIR=temp
+ENV DATABASE_URL="file:./dev.db"
 
 CMD ["node", "dist/server.js"]
