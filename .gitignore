@@ -6,5 +6,6 @@ coverage/
 *.log
 .env
 .env.local
+.env.flyio
 .DS_Store
 backend/*-player-script.js

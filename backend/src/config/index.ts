@@ -17,5 +17,7 @@ export const config = {
   },
   maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '524288000', 10),
   tempDir: path.resolve(__dirname, '../../', process.env.TEMP_DIR || '../temp'),
+  gmailUser: process.env.GMAIL_USER || '',
+  gmailAppPassword: process.env.GMAIL_APP_PASSWORD || '',
   isDev: (process.env.NODE_ENV || 'development') === 'development',
 };

@@ -26,9 +26,19 @@ export default function ContactPage() {
     if (Object.keys(errs).length > 0) return;
 
     setSending(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    toast.success('Message sent successfully!');
-    setForm({ name: '', email: '', message: '' });
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      toast.success('Message sent successfully!');
+      setForm({ name: '', email: '', message: '' });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to send message');
+    }
     setSending(false);
   };
 
