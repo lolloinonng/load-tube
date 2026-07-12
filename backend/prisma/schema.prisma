@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Download {
+  id          String   @id @default(uuid())
+  url         String
+  title       String?
+  format      String
+  quality     String
+  fileSize    Int?
+  status      String   @default("completed")
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  @@map("downloads")
+}
+
+model AdminLog {
+  id        String   @id @default(uuid())
+  action    String
+  details   String?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@map("admin_logs")
+}
