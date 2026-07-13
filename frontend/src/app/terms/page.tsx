@@ -21,7 +21,7 @@ export default function TermsPage() {
               <li>Tentare di aggirare i limiti di velocità o le misure di sicurezza</li>
             </ul>
             <h2 className="text-base font-semibold text-on-surface">3. Limitazione di Responsabilità</h2>
-            <p>load.tube è fornito &ldquo;così com'è&rdquo; senza garanzie. Non siamo responsabili per eventuali danni derivanti dal tuo utilizzo.</p>
+            <p>load.tube è fornito &ldquo;così com&apos;è&rdquo; senza garanzie. Non siamo responsabili per eventuali danni derivanti dal tuo utilizzo.</p>
           </div>
         </div>
       </div>
