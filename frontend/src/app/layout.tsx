@@ -5,13 +5,13 @@ import { Footer } from '@/components/layout/Footer';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'load.tube - YouTube Media Downloader',
-  description: 'Download YouTube videos and audio in your preferred format and quality.',
+  title: 'load.tube - Downloader YouTube',
+  description: 'Scarica video e audio da YouTube nel formato e qualità che preferisci.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="it" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

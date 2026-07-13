@@ -8,14 +8,14 @@ interface DownloadProgressProps {
 
 export function DownloadProgress({ status }: DownloadProgressProps) {
   const statusLabel: Record<string, string> = {
-    pending: 'Queued',
-    processing: 'Downloading...',
-    completed: 'Complete!',
-    failed: 'Failed',
+    pending: 'In coda',
+    processing: 'Scaricamento...',
+    completed: 'Completato!',
+    failed: 'Fallito',
   };
 
   return (
-    <div className="w-full glass-panel rounded-xl p-6 light-bleed">
+    <div className="w-full glass-panel-premium rounded-2xl p-6 light-bleed">
       <div className="flex justify-between items-center mb-3">
         <span className="font-bold text-[11px] tracking-wider text-on-surface-variant flex items-center gap-2">
           {status.status === 'processing' && (

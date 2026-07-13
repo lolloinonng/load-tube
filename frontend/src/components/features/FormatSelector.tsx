@@ -43,7 +43,7 @@ export function FormatSelector({ metadata, onDownload, downloading }: FormatSele
   };
 
   return (
-    <div className="w-full glass-panel rounded-xl p-6 light-bleed space-y-5">
+    <div className="w-full glass-panel-premium rounded-2xl p-6 light-bleed space-y-5">
       <div ref={tabContainerRef} className="relative bg-surface-container-highest rounded-full p-1 w-max flex">
         <div
           className="absolute top-1 bottom-1 rounded-full bg-primary-container shadow-sm"
@@ -100,21 +100,21 @@ export function FormatSelector({ metadata, onDownload, downloading }: FormatSele
       <button
         onClick={handleDownload}
         disabled={!selectedQuality || downloading}
-        className="bg-gradient-to-r from-primary-container to-[#8BB8D4] text-on-primary-container font-semibold text-sm px-8 py-3 rounded-full liquid-hover spring-transition shadow-lg flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+        className="bg-gradient-to-r from-[#DDD6FE] to-[#8B5CF6] text-[#1b1c1d] font-semibold text-sm px-8 py-3 rounded-full liquid-hover spring-transition shadow-lg flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
       >
         {downloading ? (
           <>
             <span className="material-symbols-outlined hand-drawn-icon animate-spin" style={{ fontSize: '18px' }}>
               sync
             </span>
-            Downloading...
+            Scaricamento...
           </>
         ) : (
           <>
             <span className="material-symbols-outlined hand-drawn-icon" style={{ fontSize: '18px' }}>
               download
             </span>
-            Download {tab === 'video' ? 'Video' : 'Audio'}
+            {tab === 'video' ? 'Scarica Video' : 'Scarica Audio'}
           </>
         )}
       </button>

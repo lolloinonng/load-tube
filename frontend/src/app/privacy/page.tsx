@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - load.tube',
+  title: 'Informativa sulla Privacy - load.tube',
 };
 
 export default function PrivacyPage() {
@@ -9,17 +9,17 @@ export default function PrivacyPage() {
     <div className="flex-grow flex flex-col items-center px-6 py-12 w-full max-w-[720px] mx-auto">
       <div className="w-full fade-in-stagger delay-100">
         <div className="glass-panel rounded-xl p-8 light-bleed">
-          <h1 className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-on-surface tracking-tight mb-6">Privacy Policy</h1>
+          <h1 className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-on-surface tracking-tight mb-6">Informativa sulla Privacy</h1>
           <div className="space-y-4 text-sm text-on-surface-variant">
-            <p>Last updated: {new Date().toLocaleDateString()}</p>
-            <h2 className="text-base font-semibold text-on-surface">1. Information We Collect</h2>
-            <p>We only collect the YouTube URL you submit for processing your download request. We do not collect personal information.</p>
-            <h2 className="text-base font-semibold text-on-surface">2. How We Use Your Information</h2>
-            <p>The URL you provide is used solely to fetch video metadata and facilitate your download. We do not store, share, or sell your data.</p>
-            <h2 className="text-base font-semibold text-on-surface">3. Temporary Files</h2>
-            <p>Downloaded files are temporarily stored only long enough to complete your download and are automatically deleted.</p>
-            <h2 className="text-base font-semibold text-on-surface">4. Cookies</h2>
-            <p>We use only essential cookies for functionality (e.g., theme preference). No tracking or analytics cookies are used.</p>
+            <p>Ultimo aggiornamento: {new Date().toLocaleDateString()}</p>
+            <h2 className="text-base font-semibold text-on-surface">1. Informazioni che Raccogliamo</h2>
+            <p>Raccogliamo solo l'URL YouTube che invii per elaborare la tua richiesta di download. Non raccogliamo informazioni personali.</p>
+            <h2 className="text-base font-semibold text-on-surface">2. Come Utilizziamo le Tue Informazioni</h2>
+            <p>L'URL fornito viene utilizzato esclusivamente per recuperare i metadati del video e facilitare il download. Non memorizziamo, condividiamo o vendiamo i tuoi dati.</p>
+            <h2 className="text-base font-semibold text-on-surface">3. File Temporanei</h2>
+            <p>I file scaricati vengono memorizzati temporaneamente solo per il tempo necessario a completare il download e vengono eliminati automaticamente.</p>
+            <h2 className="text-base font-semibold text-on-surface">4. Cookie</h2>
+            <p>Utilizziamo solo cookie essenziali per la funzionalità (es. preferenza tema). Non vengono utilizzati cookie di tracciamento o analisi.</p>
           </div>
         </div>
       </div>

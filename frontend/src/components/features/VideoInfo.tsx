@@ -10,7 +10,7 @@ interface VideoInfoProps {
 
 export function VideoInfo({ metadata }: VideoInfoProps) {
   return (
-    <div className="w-full glass-panel rounded-xl p-6 light-bleed">
+    <div className="w-full glass-panel-premium rounded-2xl p-6 light-bleed">
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-1/3 aspect-video rounded-lg overflow-hidden shadow-md relative bg-surface-container-highest">
           <Image
@@ -46,7 +46,7 @@ export function VideoInfo({ metadata }: VideoInfoProps) {
                 <span className="material-symbols-outlined hand-drawn-icon" style={{ fontSize: '12px' }}>
                   quality
                 </span>
-                {metadata.availableQualities.length} formats
+                {metadata.availableQualities.length} formati
               </span>
             </div>
           </div>
