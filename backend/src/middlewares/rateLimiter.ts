@@ -32,3 +32,13 @@ export const downloadLimiter = rateLimit({
     code: 'RATE_LIMITED',
   },
 });
+
+export const contactLimiter = rateLimit({
+  windowMs: 300000,
+  max: 1,
+  message: {
+    success: false,
+    error: 'You can only send one message every 5 minutes',
+    code: 'RATE_LIMITED',
+  },
+});

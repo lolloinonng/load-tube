@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { sendContactMessage } from '../controllers/contact.controller';
+import { contactLimiter } from '../middlewares/rateLimiter';
 
 const router = Router();
-router.post('/', sendContactMessage);
+router.post('/', contactLimiter, sendContactMessage);
 export default router;
