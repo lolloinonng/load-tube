@@ -149,7 +149,9 @@ h1, h2, h3, h4, h5, h6 { color: #C084FC; }
 input:focus, textarea:focus { outline: none; }
 
 html.dark body {
-  background: #0a0a0c;
+  background-color: #0a0a0c;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
   color: #f5f5f7;
 }
 
@@ -213,9 +215,7 @@ html.dark input::placeholder, html.dark textarea::placeholder {
   color: #636366;
 }
 
-html.dark .bg-gradient-to-r {
-  background-image: linear-gradient(to right, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.1)) !important;
-}
+
 
 html.dark .animated-gradient-bar {
   background: linear-gradient(270deg, #8B5CF6, #C084FC, #8B5CF6);
