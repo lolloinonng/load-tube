@@ -1,72 +1,81 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/convert', label: 'Converter' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/contact', label: 'Contact' },
-];
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
 
 export function Header() {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const downloadRef = useRef<HTMLButtonElement>(null);
+  const convertRef = useRef<HTMLButtonElement>(null);
+
+  const isDownload = pathname === '/';
+  const isConvert = pathname === '/convert';
+
+  useEffect(() => {
+    const btn = pathname === '/' ? downloadRef.current : convertRef.current;
+    const container = containerRef.current;
+    if (btn && container) {
+      const cr = container.getBoundingClientRect();
+      const br = btn.getBoundingClientRect();
+      setPillStyle({ left: br.left - cr.left, width: br.width });
+    }
+  }, [pathname]);
+
   return (
-    <nav className="bg-surface/30 backdrop-blur-xl border-b border-white/20 shadow-[0_8px_32px_0_rgba(74,97,113,0.05)] sticky top-0 z-40 spring-transition">
-      <div className="flex justify-between items-center w-full px-6 py-4 max-w-[720px] mx-auto">
-        <Link href="/" className="text-display-lg-mobile md:text-display-lg text-primary tracking-tight font-bold" style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}>
+    <header className="w-full bg-[#1a1a1a] py-4 px-6 sticky top-0 z-40">
+      <div className="flex items-center justify-between max-w-[720px] mx-auto mb-4">
+        <Link href="/" className="font-bold text-white tracking-tight" style={{ fontSize: 'clamp(1.3rem, 3vw, 1.6rem)' }}>
           load.tube
         </Link>
-        <div className="flex items-center gap-4">
-          <nav className="hidden md:flex items-center gap-6 mr-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  'font-label-caps text-label-caps spring-transition hover:opacity-80',
-                  pathname === link.href
-                    ? 'text-primary'
-                    : 'text-on-surface-variant/70'
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden w-10 h-10 rounded-full glass-panel flex items-center justify-center text-on-surface-variant"
+        <div className="flex items-center gap-6">
+          <Link
+            href="/faq"
+            className="text-sm text-gray-400 hover:text-white spring-transition"
           >
-            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+            FAQ
+          </Link>
+          <Link
+            href="/contact"
+            className="text-sm text-gray-400 hover:text-white spring-transition"
+          >
+            Contact
+          </Link>
+        </div>
+      </div>
+      <div className="flex justify-center">
+        <div ref={containerRef} className="relative flex items-center rounded-full bg-[#121212] p-1 px-4">
+          <div
+            className="absolute top-1 bottom-1 rounded-full bg-blue-100"
+            style={{ left: pillStyle.left, width: pillStyle.width, transition: 'left 400ms cubic-bezier(0.16, 1, 0.3, 1), width 400ms cubic-bezier(0.16, 1, 0.3, 1)' }}
+          />
+          <button
+            ref={downloadRef}
+            onClick={() => router.push('/')}
+            className={`relative z-10 flex h-10 w-20 items-center justify-center rounded-full transition ${
+              isDownload ? 'text-gray-800' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </button>
+          <button
+            ref={convertRef}
+            onClick={() => router.push('/convert')}
+            className={`relative z-10 flex h-10 w-20 items-center justify-center rounded-full transition ${
+              isConvert ? 'text-gray-800' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
           </button>
         </div>
       </div>
-      {mobileOpen && (
-        <div className="border-t border-white/20 md:hidden bg-surface/50 backdrop-blur-xl">
-          <div className="space-y-1 px-6 py-3 max-w-[720px] mx-auto">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  'block rounded-lg px-3 py-2 text-sm spring-transition',
-                  pathname === link.href
-                    ? 'text-primary font-semibold'
-                    : 'text-on-surface-variant/70 hover:bg-surface-container-low'
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-    </nav>
+    </header>
   );
 }
