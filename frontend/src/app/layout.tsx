@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Toaster } from 'react-hot-toast';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { CursorGlow } from '@/components/effects/CursorGlow';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -28,8 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         }} />
       </head>
       <body className="min-h-screen flex flex-col">
+        <CursorGlow />
         <Header />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 relative z-2">{children}</main>
         <Footer />
         <Toaster
           position="bottom-right"
