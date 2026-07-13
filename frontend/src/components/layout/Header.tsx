@@ -5,10 +5,9 @@ import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/hooks/useTheme';
-
 const navLinks = [
   { href: '/', label: 'Home' },
+  { href: '/convert', label: 'Converter' },
   { href: '/faq', label: 'FAQ' },
   { href: '/contact', label: 'Contact' },
 ];
@@ -16,8 +15,6 @@ const navLinks = [
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const { dark, toggle } = useTheme();
-
   return (
     <nav className="bg-surface/30 backdrop-blur-xl border-b border-white/20 shadow-[0_8px_32px_0_rgba(74,97,113,0.05)] sticky top-0 z-40 spring-transition">
       <div className="flex justify-between items-center w-full px-6 py-4 max-w-[720px] mx-auto">
@@ -41,15 +38,6 @@ export function Header() {
               </Link>
             ))}
           </nav>
-          <button
-            onClick={toggle}
-            className="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-on-surface-variant hover:opacity-80 spring-transition"
-            aria-label="Toggle theme"
-          >
-            <span className="material-symbols-outlined hand-drawn-icon" style={{ fontSize: '20px' }}>
-              {dark ? 'light_mode' : 'dark_mode'}
-            </span>
-          </button>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="md:hidden w-10 h-10 rounded-full glass-panel flex items-center justify-center text-on-surface-variant"

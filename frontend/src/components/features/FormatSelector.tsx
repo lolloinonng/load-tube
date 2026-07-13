@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { VideoMetadata, VideoQuality, AudioQuality } from '@/types';
 
 interface FormatSelectorProps {
@@ -14,6 +14,19 @@ type TabType = 'video' | 'audio';
 export function FormatSelector({ metadata, onDownload, downloading }: FormatSelectorProps) {
   const [tab, setTab] = useState<TabType>('video');
   const [selectedQuality, setSelectedQuality] = useState<string>('');
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
+  const tabContainerRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  useEffect(() => {
+    const btn = tabRefs.current[tab];
+    const container = tabContainerRef.current;
+    if (btn && container) {
+      const cr = container.getBoundingClientRect();
+      const br = btn.getBoundingClientRect();
+      setPillStyle({ left: br.left - cr.left, width: br.width });
+    }
+  }, [tab]);
 
   const videoQualities: VideoQuality[] = ['360p', '480p', '720p', '1080p'];
   const audioQualities: AudioQuality[] = ['64', '128', '192', '320'];
@@ -31,23 +44,29 @@ export function FormatSelector({ metadata, onDownload, downloading }: FormatSele
 
   return (
     <div className="w-full glass-panel rounded-xl p-6 light-bleed space-y-5">
-      <div className="flex bg-surface-container-highest rounded-full p-1 w-max">
+      <div ref={tabContainerRef} className="relative bg-surface-container-highest rounded-full p-1 w-max flex">
+        <div
+          className="absolute top-1 bottom-1 rounded-full bg-primary-container shadow-sm"
+          style={{ left: pillStyle.left, width: pillStyle.width, transition: 'left 400ms cubic-bezier(0.16, 1, 0.3, 1), width 400ms cubic-bezier(0.16, 1, 0.3, 1)' }}
+        />
         <button
+          ref={(el) => { tabRefs.current['video'] = el; }}
           onClick={() => { setTab('video'); setSelectedQuality(''); }}
-          className={`px-5 py-1.5 rounded-full font-bold text-[11px] tracking-wider spring-transition ${
+          className={`relative z-10 px-5 py-1.5 rounded-full font-bold text-[11px] tracking-wider spring-transition ${
             tab === 'video'
-              ? 'bg-primary-container text-on-primary-container shadow-sm'
-              : 'text-on-surface-variant hover:bg-surface-container-low'
+              ? 'text-on-primary-container'
+              : 'text-on-surface-variant hover:text-on-surface'
           }`}
         >
           Video MP4
         </button>
         <button
+          ref={(el) => { tabRefs.current['audio'] = el; }}
           onClick={() => { setTab('audio'); setSelectedQuality(''); }}
-          className={`px-5 py-1.5 rounded-full font-bold text-[11px] tracking-wider spring-transition ${
+          className={`relative z-10 px-5 py-1.5 rounded-full font-bold text-[11px] tracking-wider spring-transition ${
             tab === 'audio'
-              ? 'bg-primary-container text-on-primary-container shadow-sm'
-              : 'text-on-surface-variant hover:bg-surface-container-low'
+              ? 'text-on-primary-container'
+              : 'text-on-surface-variant hover:text-on-surface'
           }`}
         >
           Audio MP3

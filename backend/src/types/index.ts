@@ -81,6 +81,48 @@ export interface AdminStats {
   };
 }
 
+export const CONVERT_CATEGORIES = {
+  video: {
+    label: 'Video',
+    formats: ['mp4', 'avi', 'mov', 'mkv', 'webm', 'wmv', 'flv', 'gif'],
+  },
+  audio: {
+    label: 'Audio',
+    formats: ['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma', 'opus'],
+  },
+  image: {
+    label: 'Image',
+    formats: ['png', 'jpg', 'jpeg', 'webp', 'avif', 'tiff', 'bmp', 'gif', 'ico'],
+  },
+  document: {
+    label: 'Document',
+    formats: ['pdf'],
+  },
+} as const;
+
+export type ConvertCategory = keyof typeof CONVERT_CATEGORIES;
+
+export const COMPATIBLE_TARGETS: Record<ConvertCategory, ConvertCategory[]> = {
+  video: ['video', 'audio'],
+  audio: ['audio'],
+  image: ['image', 'document'],
+  document: ['document', 'image'],
+};
+
+export interface ConvertRequest {
+  targetFormat: string;
+}
+
+export interface ConvertResponse {
+  success: boolean;
+  data?: {
+    fileName: string;
+    fileSize: number;
+    downloadUrl: string;
+  };
+  error?: string;
+}
+
 export type ErrorCode =
   | 'INVALID_URL'
   | 'PRIVATE_VIDEO'
