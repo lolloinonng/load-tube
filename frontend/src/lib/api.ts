@@ -2,10 +2,21 @@ import type { AnalyzeResponse, DownloadResponse, DownloadStatus, AdminStats, Adm
 
 const API_BASE = '/api';
 
+function getCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const token = getCookie('site_token');
   const res = await fetch(`${API_BASE}${endpoint}`, {
+    credentials: 'include',
     ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options?.headers,
+    },
   });
 
   const data = await res.json();
@@ -39,38 +50,30 @@ export function getDownloadFileUrl(jobId: string): string {
   return `${API_BASE}/download/file/${jobId}`;
 }
 
-export async function getAdminStats(token: string): Promise<{ success: boolean; data: AdminStats }> {
-  return fetchApi('/admin/stats', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function getAdminStats(): Promise<{ success: boolean; data: AdminStats }> {
+  return fetchApi('/admin/stats');
 }
 
-export async function getAdminLogs(token: string, limit?: number): Promise<{ success: boolean; data: AdminLog[] }> {
+export async function getAdminLogs(limit?: number): Promise<{ success: boolean; data: AdminLog[] }> {
   const params = limit ? `?limit=${limit}` : '';
-  return fetchApi(`/admin/logs${params}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  return fetchApi(`/admin/logs${params}`);
 }
 
 export async function healthCheck(): Promise<{ success: boolean; data: { status: string; uptime: number } }> {
   return fetchApi('/health');
 }
 
-export async function getUsers(token: string): Promise<{ success: boolean; data: { id: string; email: string; role: string; createdAt: string }[] }> {
-  return fetchApi('/admin/users', { headers: { Authorization: `Bearer ${token}` } });
+export async function getUsers(): Promise<{ success: boolean; data: { id: string; email: string; role: string; createdAt: string }[] }> {
+  return fetchApi('/admin/users');
 }
 
-export async function createUserApi(token: string, email: string, role?: string): Promise<{ success: boolean; data: any }> {
+export async function createUserApi(email: string, role?: string): Promise<{ success: boolean; data: any }> {
   return fetchApi('/admin/users', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({ email, role }),
   });
 }
 
-export async function deleteUserApi(token: string, id: string): Promise<{ success: boolean }> {
-  return fetchApi(`/admin/users/${id}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function deleteUserApi(id: string): Promise<{ success: boolean }> {
+  return fetchApi(`/admin/users/${id}`, { method: 'DELETE' });
 }

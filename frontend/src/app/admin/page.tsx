@@ -12,7 +12,6 @@ import toast from 'react-hot-toast';
 export default function AdminPage() {
   const { isAuthenticated, isAdmin, loading: authLoading } = useAuth();
   const router = useRouter();
-  const token = typeof window !== 'undefined' ? localStorage.getItem('site_token') : null;
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [logs, setLogs] = useState<AdminLog[]>([]);
   const [users, setUsers] = useState<{ id: string; email: string; role: string; createdAt: string }[]>([]);
@@ -20,32 +19,30 @@ export default function AdminPage() {
   const [showAddUser, setShowAddUser] = useState(false);
 
   const loadUsers = useCallback(async () => {
-    if (!token) return;
     try {
-      const res = await getUsers(token);
+      const res = await getUsers();
       if (res.success) setUsers(res.data);
     } catch {}
-  }, [token]);
+  }, []);
 
   const loadData = useCallback(async () => {
-    if (!token) return;
     try {
       const [statsRes, logsRes] = await Promise.all([
-        getAdminStats(token),
-        getAdminLogs(token, 50),
+        getAdminStats(),
+        getAdminLogs(50),
       ]);
       if (statsRes.success) setStats(statsRes.data);
       if (logsRes.success) setLogs(logsRes.data);
     } catch {}
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !isAdmin)) {
       router.push('/');
       return;
     }
-    if (token) { loadData(); loadUsers(); }
-  }, [token, authLoading, isAuthenticated, isAdmin, router, loadData, loadUsers]);
+    if (isAuthenticated && isAdmin) { loadData(); loadUsers(); }
+  }, [authLoading, isAuthenticated, isAdmin, router, loadData, loadUsers]);
 
   if (authLoading || !isAuthenticated || !isAdmin) {
     return (
@@ -177,7 +174,7 @@ export default function AdminPage() {
               onClick={async () => {
                 if (!newEmail) return;
                 try {
-                  await createUserApi(token!, newEmail);
+                  await createUserApi(newEmail);
                   toast.success('Email aggiunta alla whitelist');
                   setNewEmail('');
                   setShowAddUser(false);
@@ -204,7 +201,7 @@ export default function AdminPage() {
                 onClick={async () => {
                   if (confirm(`Rimuovere ${u.email} dalla whitelist?`)) {
                     try {
-                      await deleteUserApi(token!, u.id);
+                      await deleteUserApi(u.id);
                       toast.success('Utente rimosso');
                       loadUsers();
                     } catch (e: any) {

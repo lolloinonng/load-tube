@@ -26,6 +26,20 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
+function getCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function setCookie(name: string, value: string, days = 1): void {
+  const expires = new Date(Date.now() + days * 86400000).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
+function removeCookie(name: string): void {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
@@ -33,38 +47,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('site_token');
-    const savedEmail = localStorage.getItem('site_email');
-    const savedRole = localStorage.getItem('site_role');
+    const savedEmail = getCookie('site_email');
+    const savedRole = getCookie('site_role');
 
-    if (token) {
-      fetch('/api/auth/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+    fetch('/api/auth/verify', { method: 'POST', credentials: 'include' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) {
+          setIsAuthenticated(true);
+          if (savedEmail) setEmail(savedEmail);
+          if (savedRole) setRole(savedRole);
+        }
+        setLoading(false);
       })
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.success) {
-            setIsAuthenticated(true);
-            if (savedEmail) setEmail(savedEmail);
-            if (savedRole) setRole(savedRole);
-          } else {
-            localStorage.removeItem('site_token');
-            localStorage.removeItem('site_email');
-            localStorage.removeItem('site_role');
-          }
-          setLoading(false);
-        })
-        .catch(() => {
-          localStorage.removeItem('site_token');
-          localStorage.removeItem('site_email');
-          localStorage.removeItem('site_role');
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
+      .catch(() => setLoading(false));
   }, []);
 
   const googleLogin = useCallback(async (credential: string) => {
@@ -76,9 +72,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const data = await res.json();
       if (data.success) {
-        localStorage.setItem('site_token', data.data.token);
-        localStorage.setItem('site_email', data.data.email);
-        localStorage.setItem('site_role', data.data.role);
         setEmail(data.data.email);
         setRole(data.data.role);
         setIsAuthenticated(true);
@@ -91,9 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('site_token');
-    localStorage.removeItem('site_email');
-    localStorage.removeItem('site_role');
+    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+    removeCookie('site_email');
+    removeCookie('site_role');
     setEmail(null);
     setRole(null);
     setIsAuthenticated(false);

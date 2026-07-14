@@ -26,6 +26,27 @@ router.post('/google', authLimiter, async (req: Request, res: Response) => {
       await prisma.user.update({ where: { email }, data: { googleId } });
     }
     const token = jwt.sign({ email: user.email, role: user.role }, config.jwtSecret, { expiresIn: '24h' });
+    res.cookie('site_token', token, {
+      httpOnly: true,
+      secure: !config.isDev,
+      sameSite: config.isDev ? 'lax' : 'none',
+      maxAge: 86400000,
+      path: '/',
+    });
+    res.cookie('site_email', user.email, {
+      httpOnly: false,
+      secure: !config.isDev,
+      sameSite: config.isDev ? 'lax' : 'none',
+      maxAge: 86400000,
+      path: '/',
+    });
+    res.cookie('site_role', user.role, {
+      httpOnly: false,
+      secure: !config.isDev,
+      sameSite: config.isDev ? 'lax' : 'none',
+      maxAge: 86400000,
+      path: '/',
+    });
     res.json({ success: true, data: { token, email: user.email, role: user.role } });
   } catch (err: any) {
     res.status(401).json({ success: false, error: err.message || 'Google auth failed' });
@@ -33,7 +54,7 @@ router.post('/google', authLimiter, async (req: Request, res: Response) => {
 });
 
 router.post('/verify', (req: Request, res: Response) => {
-  const { token } = req.body;
+  const token = req.body.token || req.cookies?.site_token;
   if (!token) {
     res.status(401).json({ success: false, error: 'No token' });
     return;
@@ -44,6 +65,13 @@ router.post('/verify', (req: Request, res: Response) => {
   } catch {
     res.status(401).json({ success: false, error: 'Invalid token' });
   }
+});
+
+router.post('/logout', (_req: Request, res: Response) => {
+  res.clearCookie('site_token', { path: '/' });
+  res.clearCookie('site_email', { path: '/' });
+  res.clearCookie('site_role', { path: '/' });
+  res.json({ success: true });
 });
 
 export default router;
