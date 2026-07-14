@@ -3,6 +3,8 @@ import { Toaster } from 'react-hot-toast';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CursorGlow } from '@/components/effects/CursorGlow';
+import { AuthProvider } from '@/components/auth/AuthProvider';
+import { AuthGate } from '@/components/auth/AuthGate';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -29,17 +31,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         }} />
       </head>
       <body className="min-h-screen flex flex-col">
-        <CursorGlow />
-        <Header />
-        <main className="flex-1 relative z-2">{children}</main>
-        <Footer />
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            className: 'dark:bg-gray-800 dark:text-white',
-            duration: 4000,
-          }}
-        />
+        <AuthProvider>
+          <CursorGlow />
+          <Header />
+          <main className="flex-1 relative z-2">
+            <AuthGate>{children}</AuthGate>
+          </main>
+          <Footer />
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className: 'dark:bg-gray-800 dark:text-white',
+              duration: 4000,
+            }}
+          />
+        </AuthProvider>
       </body>
     </html>
   );

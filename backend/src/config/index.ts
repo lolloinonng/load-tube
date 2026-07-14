@@ -19,5 +19,6 @@ export const config = {
   tempDir: path.resolve(__dirname, '../../', process.env.TEMP_DIR || '../temp'),
   gmailUser: process.env.GMAIL_USER || '',
   gmailAppPassword: process.env.GMAIL_APP_PASSWORD || '',
+  sitePassword: process.env.SITE_PASSWORD || 'loadtube',
   isDev: (process.env.NODE_ENV || 'development') === 'development',
 };
