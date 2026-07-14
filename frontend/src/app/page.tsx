@@ -85,7 +85,7 @@ export default function HomePage() {
           </div>
           <div className="lg:col-span-3 mt-8 lg:mt-0 fade-in-stagger delay-200">
             {!isAuthenticated && !authLoading ? (
-              <div className="glass-panel-premium rounded-2xl p-8 light-bleed text-center">
+              <div className="glass-panel-premium rounded-2xl p-8 light-bleed text-center fade-in-stagger delay-200">
                 <h2 className="text-lg font-bold text-on-surface">Accesso richiesto</h2>
                 <p className="text-sm text-on-surface-variant mt-2 mb-5">
                   Accedi con Google per scaricare video da YouTube
@@ -97,7 +97,8 @@ export default function HomePage() {
                   Accedi con Google
                 </a>
               </div>
-            ) : (<>
+            ) : (
+              <>
             <UrlInput onSubmit={handleAnalyze} loading={analyzing} />
 
             <div className="mt-6 space-y-5">

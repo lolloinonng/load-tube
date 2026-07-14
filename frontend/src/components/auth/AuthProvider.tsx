@@ -12,25 +12,6 @@ interface AuthContextType {
   isAdmin: boolean;
 }
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: {
-            client_id: string;
-            callback: (response: { credential: string }) => void;
-            auto_select?: boolean;
-            cancel_on_tap_outside?: boolean;
-          }) => void;
-          prompt: () => void;
-          renderButton: (element: HTMLElement, options: Record<string, string>) => void;
-        };
-      };
-    };
-  }
-}
-
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   googleLogin: async () => ({ success: false }),
@@ -50,31 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
-
-  const handleCredential = useCallback(async (credential: string) => {
-    try {
-      const res = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        localStorage.setItem('site_token', data.data.token);
-        localStorage.setItem('site_email', data.data.email);
-        localStorage.setItem('site_role', data.data.role);
-        setEmail(data.data.email);
-        setRole(data.data.role);
-        setIsAuthenticated(true);
-        return { success: true };
-      }
-      return { success: false, error: data.error || 'Accesso non autorizzato' };
-    } catch {
-      return { success: false, error: 'Errore di connessione' };
-    }
-  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('site_token');
@@ -111,31 +67,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  useEffect(() => {
-    if (loading || isAuthenticated || !clientId) return;
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.onload = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: (response) => { handleCredential(response.credential); },
-          auto_select: false,
-          cancel_on_tap_outside: false,
-        });
-        window.google.accounts.id.prompt();
-      }
-    };
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, [loading, isAuthenticated, clientId, handleCredential]);
-
   const googleLogin = useCallback(async (credential: string) => {
-    return handleCredential(credential);
-  }, [handleCredential]);
+    try {
+      const res = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('site_token', data.data.token);
+        localStorage.setItem('site_email', data.data.email);
+        localStorage.setItem('site_role', data.data.role);
+        setEmail(data.data.email);
+        setRole(data.data.role);
+        setIsAuthenticated(true);
+        return { success: true };
+      }
+      return { success: false, error: data.error || 'Accesso non autorizzato' };
+    } catch {
+      return { success: false, error: 'Errore di connessione' };
+    }
+  }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem('site_token');
