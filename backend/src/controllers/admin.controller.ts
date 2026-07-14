@@ -1,35 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { config } from '../config';
 import { CacheService } from '../services/cache.service';
 
 const prisma = new PrismaClient();
 const cacheService = new CacheService();
-
-export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const { username, password } = req.body;
-
-    if (username === config.adminUsername && password === config.adminPassword) {
-      const jwt = await import('jsonwebtoken');
-      const token = jwt.default.sign(
-        { username, role: 'admin' },
-        config.jwtSecret,
-        { expiresIn: '24h' }
-      );
-
-      await prisma.adminLog.create({
-        data: { action: 'LOGIN', details: 'Admin logged in', ip: req.ip },
-      });
-
-      res.json({ success: true, data: { token } });
-    } else {
-      res.status(401).json({ success: false, error: 'Invalid credentials' });
-    }
-  } catch (err) {
-    next(err);
-  }
-}
 
 export async function getStats(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {

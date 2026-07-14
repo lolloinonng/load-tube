@@ -4,18 +4,22 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  googleLogin: (credential: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   loading: boolean;
-  username: string | null;
+  email: string | null;
+  role: string | null;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
-  login: async () => ({ success: false }),
+  googleLogin: async () => ({ success: false }),
   logout: () => {},
   loading: true,
-  username: null,
+  email: null,
+  role: null,
+  isAdmin: false,
 });
 
 export function useAuth() {
@@ -24,12 +28,14 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('site_token');
-    const savedUsername = localStorage.getItem('site_username');
+    const savedEmail = localStorage.getItem('site_email');
+    const savedRole = localStorage.getItem('site_role');
     if (!token) {
       setLoading(false);
       return;
@@ -43,50 +49,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((data) => {
         if (data.success) {
           setIsAuthenticated(true);
-          if (savedUsername) setUsername(savedUsername);
+          if (savedEmail) setEmail(savedEmail);
+          if (savedRole) setRole(savedRole);
         } else {
           localStorage.removeItem('site_token');
-          localStorage.removeItem('site_username');
+          localStorage.removeItem('site_email');
+          localStorage.removeItem('site_role');
         }
         setLoading(false);
       })
       .catch(() => {
         localStorage.removeItem('site_token');
-        localStorage.removeItem('site_username');
+        localStorage.removeItem('site_email');
+        localStorage.removeItem('site_role');
         setLoading(false);
       });
   }, []);
 
-  const login = useCallback(async (username: string, password: string) => {
+  const googleLogin = useCallback(async (credential: string) => {
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ credential }),
       });
       const data = await res.json();
       if (data.success) {
         localStorage.setItem('site_token', data.data.token);
-        localStorage.setItem('site_username', data.data.username);
-        setUsername(data.data.username);
+        localStorage.setItem('site_email', data.data.email);
+        localStorage.setItem('site_role', data.data.role);
+        setEmail(data.data.email);
+        setRole(data.data.role);
         setIsAuthenticated(true);
         return { success: true };
       }
-      return { success: false, error: data.error || 'Invalid credentials' };
+      return { success: false, error: data.error || 'Accesso non autorizzato' };
     } catch {
-      return { success: false, error: 'Connection error' };
+      return { success: false, error: 'Errore di connessione' };
     }
   }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem('site_token');
-    localStorage.removeItem('site_username');
-    setUsername(null);
+    localStorage.removeItem('site_email');
+    localStorage.removeItem('site_role');
+    setEmail(null);
+    setRole(null);
     setIsAuthenticated(false);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, loading, username }}>
+    <AuthContext.Provider value={{ isAuthenticated, googleLogin, logout, loading, email, role, isAdmin: role === 'admin' }}>
       {children}
     </AuthContext.Provider>
   );

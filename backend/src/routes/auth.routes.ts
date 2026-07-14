@@ -1,22 +1,34 @@
 import { Router, Request, Response } from 'express';
-import { findUserByUsername, verifyPassword } from '../services/user.service';
+import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
 import { config } from '../config';
+import { verifyGoogleToken } from '../services/user.service';
+
+const prisma = new PrismaClient();
 
 const router = Router();
 
-router.post('/login', async (req: Request, res: Response) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    res.status(400).json({ success: false, error: 'Username and password required' });
-    return;
+router.post('/google', async (req: Request, res: Response) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      res.status(400).json({ success: false, error: 'Credential required' });
+      return;
+    }
+    const { email, googleId } = await verifyGoogleToken(credential, config.googleClientId);
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      res.status(403).json({ success: false, error: 'Accesso non autorizzato' });
+      return;
+    }
+    if (!user.googleId) {
+      await prisma.user.update({ where: { email }, data: { googleId } });
+    }
+    const token = jwt.sign({ email: user.email, role: user.role }, config.jwtSecret, { expiresIn: '24h' });
+    res.json({ success: true, data: { token, email: user.email, role: user.role } });
+  } catch (err: any) {
+    res.status(401).json({ success: false, error: err.message || 'Google auth failed' });
   }
-  const user = await findUserByUsername(username);
-  if (!user || !(await verifyPassword(password, user.password))) {
-    res.status(401).json({ success: false, error: 'Invalid credentials' });
-    return;
-  }
-  const token = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
-  res.json({ success: true, data: { token, username: user.username, role: user.role } });
 });
 
 router.post('/verify', (req: Request, res: Response) => {
@@ -25,7 +37,12 @@ router.post('/verify', (req: Request, res: Response) => {
     res.status(401).json({ success: false, error: 'No token' });
     return;
   }
-  res.json({ success: true });
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret);
+    res.json({ success: true, data: decoded });
+  } catch {
+    res.status(401).json({ success: false, error: 'Invalid token' });
+  }
 });
 
 export default router;

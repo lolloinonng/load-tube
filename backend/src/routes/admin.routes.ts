@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, getStats, getLogs } from '../controllers/admin.controller';
+import { getStats, getLogs } from '../controllers/admin.controller';
 import { apiLimiter } from '../middlewares/rateLimiter';
 import { authenticateToken } from '../middlewares/auth';
 import { getAllUsers, createUser, deleteUser } from '../services/user.service';
@@ -8,7 +8,6 @@ import { PrismaClient } from '@prisma/client';
 const router = Router();
 const prisma = new PrismaClient();
 
-router.post('/login', apiLimiter, login);
 router.get('/stats', authenticateToken, getStats);
 router.get('/logs', authenticateToken, getLogs);
 
@@ -21,19 +20,19 @@ router.get('/users', authenticateToken, async (_req, res, next) => {
 
 router.post('/users', authenticateToken, async (req, res, next) => {
   try {
-    const { username, password, role } = req.body;
-    if (!username || !password) {
-      res.status(400).json({ success: false, error: 'Username and password required' });
+    const { email, role } = req.body;
+    if (!email) {
+      res.status(400).json({ success: false, error: 'Email required' });
       return;
     }
-    const user = await createUser(username, password, role || 'user');
+    const user = await createUser(email, role || 'user');
     await prisma.adminLog.create({
-      data: { action: 'CREATE_USER', details: `Created user: ${username}`, ip: req.ip },
+      data: { action: 'CREATE_USER', details: `Added email: ${email}`, ip: req.ip },
     });
     res.json({ success: true, data: user });
   } catch (err: any) {
-    if (err.message === 'Username already exists') {
-      res.status(409).json({ success: false, error: 'Username already exists' });
+    if (err.message === 'Email already exists') {
+      res.status(409).json({ success: false, error: 'Email già presente' });
       return;
     }
     next(err);

@@ -8,8 +8,8 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   databaseUrl: process.env.DATABASE_URL || '',
   jwtSecret: process.env.JWT_SECRET || 'default-secret',
-  adminUsername: process.env.ADMIN_USERNAME || 'admin',
-  adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
+  googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+  adminEmail: process.env.ADMIN_EMAIL || '',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),

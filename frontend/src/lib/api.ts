@@ -39,13 +39,6 @@ export function getDownloadFileUrl(jobId: string): string {
   return `${API_BASE}/download/file/${jobId}`;
 }
 
-export async function adminLogin(username: string, password: string): Promise<{ success: boolean; data: { token: string } }> {
-  return fetchApi('/admin/login', {
-    method: 'POST',
-    body: JSON.stringify({ username, password }),
-  });
-}
-
 export async function getAdminStats(token: string): Promise<{ success: boolean; data: AdminStats }> {
   return fetchApi('/admin/stats', {
     headers: { Authorization: `Bearer ${token}` },
@@ -63,15 +56,15 @@ export async function healthCheck(): Promise<{ success: boolean; data: { status:
   return fetchApi('/health');
 }
 
-export async function getUsers(token: string): Promise<{ success: boolean; data: { id: string; username: string; role: string; createdAt: string }[] }> {
+export async function getUsers(token: string): Promise<{ success: boolean; data: { id: string; email: string; role: string; createdAt: string }[] }> {
   return fetchApi('/admin/users', { headers: { Authorization: `Bearer ${token}` } });
 }
 
-export async function createUserApi(token: string, username: string, password: string, role?: string): Promise<{ success: boolean; data: any }> {
+export async function createUserApi(token: string, email: string, role?: string): Promise<{ success: boolean; data: any }> {
   return fetchApi('/admin/users', {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ username, password, role }),
+    body: JSON.stringify({ email, role }),
   });
 }
 
