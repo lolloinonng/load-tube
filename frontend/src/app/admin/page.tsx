@@ -7,6 +7,7 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import type { AdminStats, AdminLog } from '@/types';
 import { formatDate } from '@/lib/utils';
 import { Download, BarChart3, Users, Plus, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function AdminPage() {
   const { isAuthenticated, isAdmin, loading: authLoading } = useAuth();
@@ -175,10 +176,15 @@ export default function AdminPage() {
             <button
               onClick={async () => {
                 if (!newEmail) return;
-                await createUserApi(token!, newEmail);
-                setNewEmail('');
-                setShowAddUser(false);
-                loadUsers();
+                try {
+                  await createUserApi(token!, newEmail);
+                  toast.success('Email aggiunta alla whitelist');
+                  setNewEmail('');
+                  setShowAddUser(false);
+                  loadUsers();
+                } catch (e: any) {
+                  toast.error(e.message || 'Errore');
+                }
               }}
               className="bg-gradient-to-r from-[#DDD6FE] to-[#8B5CF6] text-[#1b1c1d] font-bold text-[10px] px-3 py-2 rounded-lg spring-transition"
             >
@@ -197,8 +203,13 @@ export default function AdminPage() {
               <button
                 onClick={async () => {
                   if (confirm(`Rimuovere ${u.email} dalla whitelist?`)) {
-                    await deleteUserApi(token!, u.id);
-                    loadUsers();
+                    try {
+                      await deleteUserApi(token!, u.id);
+                      toast.success('Utente rimosso');
+                      loadUsers();
+                    } catch (e: any) {
+                      toast.error(e.message || 'Errore');
+                    }
                   }
                 }}
                 className="text-on-surface-variant/40 hover:text-red-400 spring-transition shrink-0 ml-2"
