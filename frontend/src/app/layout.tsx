@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <CursorGlow />
           <Header />
-          <main className="flex-1 relative z-2">
+          <main className="flex-1 flex flex-col relative z-2">
             <AuthGate>{children}</AuthGate>
           </main>
           <Footer />
