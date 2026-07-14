@@ -1,31 +1,39 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 
 export default function LoginPage() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [error] = useState('');
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      router.push('/');
+    if (!authLoading && isAuthenticated) {
+      setRedirecting(true);
+      setTimeout(() => router.push('/'), 600);
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, authLoading, router]);
+
+  if (redirecting) {
+    return (
+      <div className="flex-grow flex items-center justify-center px-6">
+        <div className="glass-panel-premium rounded-2xl p-8 light-bleed text-center">
+          <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm text-on-surface-variant">Reindirizzamento in corso...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-grow flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
-        <div className="glass-panel-premium rounded-2xl p-8 light-bleed space-y-5">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-on-surface tracking-tight">load.tube</h1>
-            <p className="text-sm text-on-surface-variant mt-2">Accedi con Google per utilizzare il sito</p>
-          </div>
-          {error && (
-            <p className="text-xs text-red-400 font-medium text-center">{error}</p>
-          )}
+        <div className="glass-panel-premium rounded-2xl p-8 light-bleed text-center space-y-5">
+          <h1 className="text-2xl font-bold text-on-surface tracking-tight">load.tube</h1>
+          <p className="text-sm text-on-surface-variant">Clicca il profilo Google che appare sopra per accedere</p>
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
         </div>
       </div>
     </div>
