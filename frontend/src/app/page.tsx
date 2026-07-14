@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { UrlInput } from '@/components/features/UrlInput';
 import { VideoInfo } from '@/components/features/VideoInfo';
 import { FormatSelector } from '@/components/features/FormatSelector';
@@ -8,10 +9,10 @@ import { DownloadProgress } from '@/components/features/DownloadProgress';
 import { useMediaFetch } from '@/hooks/useMediaFetch';
 import { getErrorCodeMessage } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { GoogleOneTap } from '@/components/auth/GoogleOneTap';
 
 export default function HomePage() {
-  const { isAuthenticated, loading: authLoading, email } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const router = useRouter();
   const {
     analyzing,
     downloading,
@@ -25,6 +26,11 @@ export default function HomePage() {
 
   const cardRef = useRef<HTMLDivElement>(null);
   const [parallaxStyle, setParallaxStyle] = useState({});
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) router.push('/login');
+  }, [authLoading, isAuthenticated, router]);
 
   useEffect(() => {
     const card = cardRef.current;
@@ -72,6 +78,22 @@ export default function HomePage() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="flex-grow flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex-grow flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex-grow w-full">
       <div className="max-w-6xl mx-auto px-6 py-12 md:py-20">
@@ -85,20 +107,6 @@ export default function HomePage() {
             </p>
           </div>
           <div className="lg:col-span-3 mt-8 lg:mt-0 fade-in-stagger delay-200">
-            {!isAuthenticated && !authLoading ? (
-              <div className="glass-panel-premium rounded-2xl p-8 light-bleed text-center fade-in-stagger delay-200">
-                <GoogleOneTap />
-                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <h2 className="text-lg font-bold text-on-surface">Account Google rilevato</h2>
-                <p className="text-sm text-on-surface-variant mt-2">
-                  Clicca il profilo qui sopra per accedere
-                </p>
-                <p className="text-xs text-on-surface-variant/50 mt-4">
-                  Non vedi il profilo? <a href="/login" className="text-primary underline">clicca qui</a>
-                </p>
-              </div>
-            ) : (
-              <>
             <UrlInput onSubmit={handleAnalyze} loading={analyzing} />
 
             <div className="mt-6 space-y-5">
@@ -146,7 +154,6 @@ export default function HomePage() {
                 </div>
               )}
             </div>
-            </>)}
           </div>
         </div>
       </div>

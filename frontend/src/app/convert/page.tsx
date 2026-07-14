@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { GoogleOneTap } from '@/components/auth/GoogleOneTap';
+import { useRouter } from 'next/navigation';
 
 const CATEGORIES = {
   video: { label: 'Video', formats: ['mp4', 'avi', 'mov', 'mkv', 'webm', 'wmv', 'flv', 'gif'] },
@@ -31,6 +31,7 @@ function detectCategory(ext: string): Category | null {
 
 export default function ConvertPage() {
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [sourceCat, setSourceCat] = useState<Category | null>(null);
   const [targetCat, setTargetCat] = useState<Category>('video');
@@ -44,6 +45,11 @@ export default function ConvertPage() {
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const compatibleCats: Category[] = sourceCat ? COMPATIBLE[sourceCat] : ['video', 'audio', 'image', 'document'];
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) router.push('/login');
+  }, [authLoading, isAuthenticated, router]);
 
   useEffect(() => {
     const btn = tabRefs.current[targetCat];
@@ -119,20 +125,12 @@ export default function ConvertPage() {
               Converti video, audio, immagini e documenti in qualsiasi formato.
             </p>
           </div>
+          {authLoading || !isAuthenticated ? (
+            <div className="lg:col-span-3 flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
           <div className="lg:col-span-3 mt-8 lg:mt-0 fade-in-stagger delay-200">
-            {!isAuthenticated && !authLoading ? (
-              <div className="glass-panel-premium rounded-2xl p-8 light-bleed text-center">
-                <GoogleOneTap />
-                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <h2 className="text-lg font-bold text-on-surface">Account Google rilevato</h2>
-                <p className="text-sm text-on-surface-variant mt-2">
-                  Clicca il profilo qui sopra per accedere
-                </p>
-                <p className="text-xs text-on-surface-variant/50 mt-4">
-                  Non vedi il profilo? <a href="/login" className="text-primary underline">clicca qui</a>
-                </p>
-              </div>
-            ) : (<>
             <div
               onDrop={onDrop}
               onDragOver={onDragOver}
@@ -247,8 +245,8 @@ export default function ConvertPage() {
                 </div>
               )}
             </div>
-            </>)}
           </div>
+          )}
         </div>
       </div>
     </div>
