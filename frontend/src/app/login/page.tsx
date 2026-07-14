@@ -1,13 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { GoogleOneTap } from '@/components/auth/GoogleOneTap';
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void;
+          renderButton: (element: HTMLElement, options: { theme: string; size: string; text: string; shape: string; width: string }) => void;
+        };
+      };
+    };
+  }
+}
 
 export default function LoginPage() {
+  const buttonRef = useRef<HTMLDivElement>(null);
   const [logging, setLogging] = useState(false);
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const [error, setError] = useState('');
+  const { googleLogin, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -15,6 +29,40 @@ export default function LoginPage() {
       router.push('/');
     }
   }, [isAuthenticated, authLoading, router]);
+
+  useEffect(() => {
+    if (authLoading || isAuthenticated) return;
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.onload = () => {
+      if (window.google && buttonRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+          callback: async (response) => {
+            setLogging(true);
+            setError('');
+            const result = await googleLogin(response.credential);
+            if (!result.success) {
+              setLogging(false);
+              setError(result.error || 'Accesso non autorizzato');
+            }
+          },
+        });
+        window.google.accounts.id.renderButton(buttonRef.current, {
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
+          shape: 'pill',
+          width: '320',
+        });
+      }
+    };
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, [authLoading, isAuthenticated, googleLogin]);
 
   if (logging) {
     return (
@@ -29,12 +77,16 @@ export default function LoginPage() {
 
   return (
     <div className="flex-grow flex items-center justify-center px-6">
-      <GoogleOneTap onLogging={setLogging} />
       <div className="w-full max-w-sm">
-        <div className="glass-panel-premium rounded-2xl p-8 light-bleed text-center">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-on-surface tracking-tight">load.tube</h1>
-          <p className="text-sm text-on-surface-variant mt-2">Rilevamento account Google in corso...</p>
+        <div className="glass-panel-premium rounded-2xl p-8 light-bleed space-y-5">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-on-surface tracking-tight">load.tube</h1>
+            <p className="text-sm text-on-surface-variant mt-2">Accedi con Google</p>
+          </div>
+          <div className="flex justify-center" ref={buttonRef} />
+          {error && (
+            <p className="text-xs text-red-400 font-medium text-center">{error}</p>
+          )}
         </div>
       </div>
     </div>
