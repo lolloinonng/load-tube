@@ -2,10 +2,12 @@ import app from './app';
 import { config } from './config';
 import { logger } from './utils/logger';
 import { startCleanupInterval } from './utils/cleanup';
+import { createInitialAdmin } from './services/user.service';
 
 const cleanupInterval = startCleanupInterval();
 
-app.listen(config.port, () => {
+app.listen(config.port, async () => {
+  await createInitialAdmin(config.adminUsername, config.adminPassword);
   logger.info(`Server running on port ${config.port} in ${config.nodeEnv} mode`);
   logger.info(`Temp directory: ${config.tempDir}`);
 });

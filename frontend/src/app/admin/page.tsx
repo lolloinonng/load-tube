@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { adminLogin, getAdminStats, getAdminLogs } from '@/lib/api';
+import { adminLogin, getAdminStats, getAdminLogs, getUsers, createUserApi, deleteUserApi } from '@/lib/api';
 import type { AdminStats, AdminLog } from '@/types';
 import { formatDate } from '@/lib/utils';
-import { Lock, Download, BarChart3, Activity, FileText } from 'lucide-react';
+import { Lock, Download, BarChart3, Activity, FileText, Users, Plus, Trash2 } from 'lucide-react';
 
 export default function AdminPage() {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -13,6 +13,9 @@ export default function AdminPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [logs, setLogs] = useState<AdminLog[]>([]);
   const [error, setError] = useState('');
+  const [users, setUsers] = useState<{ id: string; username: string; role: string; createdAt: string }[]>([]);
+  const [newUser, setNewUser] = useState({ username: '', password: '' });
+  const [showAddUser, setShowAddUser] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +34,14 @@ export default function AdminPage() {
     }
   };
 
+  const loadUsers = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await getUsers(token);
+      if (res.success) setUsers(res.data);
+    } catch {}
+  }, [token]);
+
   const loadData = useCallback(async () => {
     if (!token) return;
     try {
@@ -47,13 +58,13 @@ export default function AdminPage() {
   }, [token]);
 
   useEffect(() => {
+    if (token) { loadData(); loadUsers(); }
+  }, [token, loadData, loadUsers]);
+
+  useEffect(() => {
     const saved = localStorage.getItem('admin_token');
     if (saved) setToken(saved);
   }, []);
-
-  useEffect(() => {
-    if (token) loadData();
-  }, [token, loadData]);
 
   const handleLogout = () => {
     setToken(null);
@@ -92,7 +103,7 @@ export default function AdminPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary-container to-[#8BB8D4] text-on-primary-container font-semibold text-sm px-6 py-2.5 rounded-full liquid-hover spring-transition shadow-lg disabled:opacity-40"
+              className="w-full bg-gradient-to-r from-[#DDD6FE] to-[#8B5CF6] text-[#1b1c1d] font-semibold text-sm px-6 py-2.5 rounded-full liquid-hover spring-transition shadow-lg disabled:opacity-40"
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>
@@ -199,6 +210,77 @@ export default function AdminPage() {
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="glass-panel rounded-xl p-5 light-bleed mt-4 fade-in-stagger delay-400">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold text-on-surface tracking-wider uppercase flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                Utenti
+              </h2>
+              <button
+                onClick={() => setShowAddUser(!showAddUser)}
+                className="text-xs font-bold text-primary hover:text-primary-container spring-transition flex items-center gap-1"
+              >
+                <Plus className="h-3 w-3" />
+                Aggiungi
+              </button>
+            </div>
+
+            {showAddUser && (
+              <div className="flex gap-2 mb-3">
+                <input
+                  value={newUser.username}
+                  onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                  placeholder="Username"
+                  className="flex-1 bg-surface-container-low border border-outline-variant/50 rounded-lg px-3 py-2 text-xs text-on-surface focus:outline-none focus:border-primary-container spring-transition"
+                />
+                <input
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  placeholder="Password"
+                  className="flex-1 bg-surface-container-low border border-outline-variant/50 rounded-lg px-3 py-2 text-xs text-on-surface focus:outline-none focus:border-primary-container spring-transition"
+                />
+                <button
+                  onClick={async () => {
+                    if (!newUser.username || !newUser.password) return;
+                    await createUserApi(token!, newUser.username, newUser.password);
+                    setNewUser({ username: '', password: '' });
+                    setShowAddUser(false);
+                    loadUsers();
+                  }}
+                  className="bg-gradient-to-r from-[#DDD6FE] to-[#8B5CF6] text-[#1b1c1d] font-bold text-[10px] px-3 py-2 rounded-lg spring-transition"
+                >
+                  Salva
+                </button>
+              </div>
+            )}
+
+            <div className="space-y-1">
+              {users.map((u) => (
+                <div key={u.id} className="flex items-center justify-between py-1.5 border-b border-white/10 last:border-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-on-surface">{u.username}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-on-surface-variant/60">{u.role}</span>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (confirm(`Eliminare ${u.username}?`)) {
+                        await deleteUserApi(token!, u.id);
+                        loadUsers();
+                      }
+                    }}
+                    className="text-on-surface-variant/40 hover:text-red-400 spring-transition"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              {users.length === 0 && (
+                <p className="text-xs text-on-surface-variant/60">Nessun utente</p>
+              )}
+            </div>
           </div>
         </>
       )}

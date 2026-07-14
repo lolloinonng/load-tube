@@ -21,6 +21,16 @@ model Download {
   @@map("downloads")
 }
 
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+
+  @@map("users")
+}
+
 model AdminLog {
   id        String   @id @default(uuid())
   action    String

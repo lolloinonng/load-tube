@@ -62,3 +62,22 @@ export async function getAdminLogs(token: string, limit?: number): Promise<{ suc
 export async function healthCheck(): Promise<{ success: boolean; data: { status: string; uptime: number } }> {
   return fetchApi('/health');
 }
+
+export async function getUsers(token: string): Promise<{ success: boolean; data: { id: string; username: string; role: string; createdAt: string }[] }> {
+  return fetchApi('/admin/users', { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export async function createUserApi(token: string, username: string, password: string, role?: string): Promise<{ success: boolean; data: any }> {
+  return fetchApi('/admin/users', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ username, password, role }),
+  });
+}
+
+export async function deleteUserApi(token: string, id: string): Promise<{ success: boolean }> {
+  return fetchApi(`/admin/users/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
