@@ -42,9 +42,10 @@ router.post('/users', authenticateToken, async (req, res, next) => {
 
 router.delete('/users/:id', authenticateToken, async (req, res, next) => {
   try {
-    await deleteUser(req.params.id);
+    const id = req.params.id as string;
+    await deleteUser(id);
     await prisma.adminLog.create({
-      data: { action: 'DELETE_USER', details: `Deleted user: ${req.params.id}`, ip: req.ip },
+      data: { action: 'DELETE_USER', details: `Deleted user: ${id}`, ip: req.ip },
     });
     res.json({ success: true });
   } catch (err) { next(err); }
