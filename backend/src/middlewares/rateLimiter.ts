@@ -42,3 +42,13 @@ export const contactLimiter = rateLimit({
     code: 'RATE_LIMITED',
   },
 });
+
+export const authLimiter = rateLimit({
+  windowMs: 60000,
+  max: 30,
+  message: {
+    success: false,
+    error: 'Too many auth requests',
+    code: 'RATE_LIMITED',
+  },
+});

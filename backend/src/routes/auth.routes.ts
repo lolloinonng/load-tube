@@ -3,12 +3,13 @@ import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { config } from '../config';
 import { verifyGoogleToken } from '../services/user.service';
+import { authLimiter } from '../middlewares/rateLimiter';
 
 const prisma = new PrismaClient();
 
 const router = Router();
 
-router.post('/google', async (req: Request, res: Response) => {
+router.post('/google', authLimiter, async (req: Request, res: Response) => {
   try {
     const { credential } = req.body;
     if (!credential) {

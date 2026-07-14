@@ -1,24 +1,23 @@
 import { Router } from 'express';
 import { getStats, getLogs } from '../controllers/admin.controller';
-import { apiLimiter } from '../middlewares/rateLimiter';
-import { authenticateToken } from '../middlewares/auth';
+import { authenticateToken, requireAdmin } from '../middlewares/auth';
 import { getAllUsers, createUser, deleteUser } from '../services/user.service';
 import { PrismaClient } from '@prisma/client';
 
 const router = Router();
 const prisma = new PrismaClient();
 
-router.get('/stats', authenticateToken, getStats);
-router.get('/logs', authenticateToken, getLogs);
+router.get('/stats', authenticateToken, requireAdmin, getStats);
+router.get('/logs', authenticateToken, requireAdmin, getLogs);
 
-router.get('/users', authenticateToken, async (_req, res, next) => {
+router.get('/users', authenticateToken, requireAdmin, async (_req, res, next) => {
   try {
     const users = await getAllUsers();
     res.json({ success: true, data: users });
   } catch (err) { next(err); }
 });
 
-router.post('/users', authenticateToken, async (req, res, next) => {
+router.post('/users', authenticateToken, requireAdmin, async (req, res, next) => {
   try {
     const { email, role } = req.body;
     if (!email) {
@@ -39,7 +38,7 @@ router.post('/users', authenticateToken, async (req, res, next) => {
   }
 });
 
-router.delete('/users/:id', authenticateToken, async (req, res, next) => {
+router.delete('/users/:id', authenticateToken, requireAdmin, async (req, res, next) => {
   try {
     const id = req.params.id as string;
     await deleteUser(id);
