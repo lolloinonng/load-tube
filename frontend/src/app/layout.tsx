@@ -4,7 +4,6 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CursorGlow } from '@/components/effects/CursorGlow';
 import { AuthProvider } from '@/components/auth/AuthProvider';
-import { AuthGate } from '@/components/auth/AuthGate';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -35,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CursorGlow />
           <Header />
           <main className="flex-1 flex flex-col relative z-2">
-            <AuthGate>{children}</AuthGate>
+            {children}
           </main>
           <Footer />
           <Toaster

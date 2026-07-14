@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 const CATEGORIES = {
   video: { label: 'Video', formats: ['mp4', 'avi', 'mov', 'mkv', 'webm', 'wmv', 'flv', 'gif'] },
@@ -28,6 +29,7 @@ function detectCategory(ext: string): Category | null {
 }
 
 export default function ConvertPage() {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [sourceCat, setSourceCat] = useState<Category | null>(null);
   const [targetCat, setTargetCat] = useState<Category>('video');
@@ -117,6 +119,20 @@ export default function ConvertPage() {
             </p>
           </div>
           <div className="lg:col-span-3 mt-8 lg:mt-0 fade-in-stagger delay-200">
+            {!isAuthenticated && !authLoading ? (
+              <div className="glass-panel-premium rounded-2xl p-8 light-bleed text-center">
+                <h2 className="text-lg font-bold text-on-surface">Accesso richiesto</h2>
+                <p className="text-sm text-on-surface-variant mt-2 mb-5">
+                  Accedi con Google per convertire file
+                </p>
+                <a
+                  href="/login"
+                  className="inline-block bg-gradient-to-r from-[#DDD6FE] to-[#8B5CF6] text-[#1b1c1d] font-semibold text-sm px-6 py-2.5 rounded-full liquid-hover spring-transition shadow-lg"
+                >
+                  Accedi con Google
+                </a>
+              </div>
+            ) : (<>
             <div
               onDrop={onDrop}
               onDragOver={onDragOver}
@@ -231,6 +247,7 @@ export default function ConvertPage() {
                 </div>
               )}
             </div>
+            </>)}
           </div>
         </div>
       </div>
