@@ -3,10 +3,6 @@ import { initDb } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/api-middleware';
 import ytdl from '@distube/ytdl-core';
 
-const requestOptions = {
-  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36' },
-};
-
 export async function POST(req: NextRequest) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
@@ -17,7 +13,7 @@ export async function POST(req: NextRequest) {
   if (!videoUrl) return NextResponse.json({ success: false, error: 'URL required' }, { status: 400 });
 
   try {
-    const info = await ytdl.getInfo(videoUrl, { requestOptions });
+    const info = await ytdl.getInfo(videoUrl);
     const formats = info.formats
       .filter((f: any) => f.hasAudio && f.hasVideo)
       .map((f: any) => ({

@@ -3,10 +3,6 @@ import { getClient, initDb } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/api-middleware';
 import ytdl from '@distube/ytdl-core';
 
-const requestOptions = {
-  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36' },
-};
-
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
@@ -19,7 +15,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const row = result.rows[0] as any;
 
   try {
-    const info = await ytdl.getInfo(row.url, { requestOptions });
+    const info = await ytdl.getInfo(row.url);
     let format: any;
     if (row.format === 'audio') {
       format = ytdl.chooseFormat(info.formats, { quality: 'highestaudio', filter: 'audioonly' });
