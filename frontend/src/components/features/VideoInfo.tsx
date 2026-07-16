@@ -7,7 +7,15 @@ interface VideoInfoProps {
   metadata: VideoMetadata;
 }
 
-function parseDuration(dur: string): string {
+function formatDuration(dur: string | number): string {
+  if (typeof dur === 'number') {
+    const h = Math.floor(dur / 3600);
+    const m = Math.floor((dur % 3600) / 60);
+    const s = dur % 60;
+    const parts = [m.toString().padStart(2, '0'), s.toString().padStart(2, '0')];
+    if (h) parts.unshift(h.toString().padStart(2, '0'));
+    return parts.join(':');
+  }
   const match = dur.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
   if (!match) return dur;
   const h = (match[1] || '').replace('H', '');
@@ -31,7 +39,7 @@ export function VideoInfo({ metadata }: VideoInfoProps) {
             sizes="(max-width: 768px) 100vw, 240px"
           />
           <div className="absolute bottom-2 right-2 bg-inverse-surface/80 text-inverse-on-surface text-[11px] font-bold px-2 py-1 rounded backdrop-blur-md tracking-wider">
-            {parseDuration(metadata.duration)}
+            {formatDuration(metadata.duration)}
           </div>
         </div>
         <div className="w-full md:w-2/3 flex flex-col justify-between">

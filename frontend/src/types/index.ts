@@ -1,6 +1,6 @@
 export interface VideoMetadata {
   title: string;
-  duration: string;
+  duration: string | number;
   thumbnail: string;
   author: string;
   formats: QualityOption[];
