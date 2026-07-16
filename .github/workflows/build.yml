@@ -58,14 +58,12 @@ jobs:
           mkdir -p binaries
           curl -L -o binaries/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp
           chmod +x binaries/yt-dlp
-      - name: Download ffmpeg
+      - name: Setup ffmpeg
         run: |
-          curl -L -o ffmpeg.7z https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-macos64-gpl.7z
-          7z x ffmpeg.7z -offmpeg-temp
-          cp ffmpeg-temp/ffmpeg-master-latest-macos64-gpl/bin/ffmpeg binaries/
-          cp ffmpeg-temp/ffmpeg-master-latest-macos64-gpl/bin/ffprobe binaries/
+          brew install ffmpeg
+          cp "$(brew --prefix ffmpeg)/bin/ffmpeg" binaries/ffmpeg
+          cp "$(brew --prefix ffmpeg)/bin/ffprobe" binaries/ffprobe
           chmod +x binaries/ffmpeg binaries/ffprobe
-          rm -rf ffmpeg.7z ffmpeg-temp
       - run: npm ci
       - run: npm run dist:mac
       - uses: actions/upload-artifact@v4
