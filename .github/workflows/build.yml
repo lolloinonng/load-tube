@@ -66,6 +66,8 @@ jobs:
           cp "$(brew --prefix ffmpeg)/bin/ffprobe" binaries/ffprobe
           chmod +x binaries/ffmpeg binaries/ffprobe
       - run: npm ci
+      - name: Fix binary permissions
+        run: chmod -R 755 binaries/
       - run: npm run dist:mac
       - uses: actions/upload-artifact@v4
         with:

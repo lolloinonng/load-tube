@@ -6,6 +6,7 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 const existsAsync = promisify(fs.exists);
+const chmodAsync = promisify(fs.chmod);
 
 process.env.DIST = path.join(__dirname, '../dist');
 process.env.VITE_PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public');
@@ -39,6 +40,21 @@ function getFfprobePath(): string {
 
 const isDev = !app.isPackaged;
 
+// Fix permissions on bundled binaries
+async function fixBinaryPerms() {
+  const binDir = getBinDir();
+  if (await existsAsync(binDir)) {
+    const isWin = process.platform === 'win32';
+    const files = [isWin ? 'yt-dlp.exe' : 'yt-dlp', 'ffmpeg', 'ffprobe'];
+    for (const f of files) {
+      const fp = path.join(binDir, f);
+      try {
+        if (await existsAsync(fp)) await chmodAsync(fp, 0o755);
+      } catch {}
+    }
+  }
+}
+
 function createWindow() {
   mainWin = new BrowserWindow({
     width: 1100,
@@ -65,7 +81,10 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  await fixBinaryPerms();
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
