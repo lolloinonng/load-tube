@@ -70,4 +70,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: loadtube-mac
-          path: desktop/release/*.dmg
+          path: desktop/release/*.zip

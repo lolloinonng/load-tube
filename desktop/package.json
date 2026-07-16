@@ -46,7 +46,7 @@
       "icon": "public/icon.png"
     },
     "mac": {
-      "target": "dmg",
+      "target": "zip",
       "icon": "public/icon.png",
       "identity": null
     },
