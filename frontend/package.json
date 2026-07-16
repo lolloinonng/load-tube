@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.16.12",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@libsql/client": "^0.17.4",
     "clsx": "^2.1.1",
     "firebase-admin": "^14.1.0",

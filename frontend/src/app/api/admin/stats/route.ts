@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getClient } from '@/lib/db';
+import { getClient, initDb } from '@/lib/db';
 import { getUserFromRequest, requireAdmin } from '@/lib/api-middleware';
 
 export async function GET(req: NextRequest) {
   const user = getUserFromRequest(req);
   if (!requireAdmin(user)) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
 
+  await initDb();
   const client = getClient();
   const today = new Date().toISOString().slice(0, 10);
 

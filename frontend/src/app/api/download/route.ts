@@ -4,6 +4,10 @@ import { initDb, getClient } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/api-middleware';
 import ytdl from '@distube/ytdl-core';
 
+const requestOptions = {
+  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36' },
+};
+
 export async function POST(req: NextRequest) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
@@ -13,7 +17,7 @@ export async function POST(req: NextRequest) {
   if (!url) return NextResponse.json({ success: false, error: 'URL required' }, { status: 400 });
 
   try {
-    const info = await ytdl.getInfo(url);
+    const info = await ytdl.getInfo(url, { requestOptions });
     const formatKey = quality || 'highest';
 
     let selectedFormat: any;
