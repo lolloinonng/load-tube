@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getClient, initDb } from '@/lib/db';
+import { initDb } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/api-middleware';
-import ytdl from '@distube/ytdl-core';
+
+let yt: any = null;
+
+async function getYt() {
+  if (!yt) {
+    const { Innertube } = await import('youtubei.js');
+    yt = await Innertube.create({ lang: 'it', location: 'IT' });
+  }
+  return yt;
+}
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = getUserFromRequest(req);
@@ -9,24 +18,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { id } = await params;
   await initDb();
-  const result = await getClient().execute({ sql: 'SELECT * FROM downloads WHERE id = ?', args: [id] });
-  if (result.rows.length === 0) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
-
-  const row = result.rows[0] as any;
 
   try {
-    const info = await ytdl.getInfo(row.url);
-    let format: any;
-    if (row.format === 'audio') {
-      format = ytdl.chooseFormat(info.formats, { quality: 'highestaudio', filter: 'audioonly' });
-    } else {
-      const formats = info.formats.filter((f: any) => f.hasAudio && f.hasVideo);
-      format = formats[0] || info.formats[0];
-    }
-    if (!format?.url) return NextResponse.json({ success: false, error: 'No stream URL' }, { status: 500 });
-
-    return NextResponse.redirect(format.url);
+    const youtube = await getYt();
+    const info = await youtube.getInfo(id);
+    const formats = info.streaming_data?.formats?.filter((f: any) => f.has_audio && f.has_video) || [];
+    const format = formats[formats.length - 1] || info.streaming_data?.adaptive_formats?.[0];
+    const url = format?.url || format?.decipher?.(youtube.session.player);
+    if (!url) return NextResponse.json({ success: false, error: 'No URL' }, { status: 500 });
+    return NextResponse.redirect(url);
   } catch {
-    return NextResponse.json({ success: false, error: 'Failed to get download URL' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed' }, { status: 500 });
   }
 }

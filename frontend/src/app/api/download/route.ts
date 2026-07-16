@@ -1,8 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
-import { initDb, getClient } from '@/lib/db';
+import { initDb } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/api-middleware';
-import ytdl from '@distube/ytdl-core';
+
+let yt: any = null;
+
+async function getYt() {
+  if (!yt) {
+    const { Innertube } = await import('youtubei.js');
+    yt = await Innertube.create({ lang: 'it', location: 'IT' });
+  }
+  return yt;
+}
+
+function extractVideoId(url: string): string | null {
+  const patterns = [
+    /(?:v=|youtu\.be\/|\/shorts\/)([\w-]{11})/,
+    /^([\w-]{11})$/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+}
 
 export async function POST(req: NextRequest) {
   const user = getUserFromRequest(req);
@@ -12,36 +32,45 @@ export async function POST(req: NextRequest) {
   const { url, format, quality } = await req.json();
   if (!url) return NextResponse.json({ success: false, error: 'URL required' }, { status: 400 });
 
+  const videoId = extractVideoId(url);
+  if (!videoId) return NextResponse.json({ success: false, error: 'Invalid YouTube URL' }, { status: 400 });
+
   try {
-    const info = await ytdl.getInfo(url);
-    const formatKey = quality || 'highest';
+    const youtube = await getYt();
+    const info = await youtube.getInfo(videoId);
+    const title = info.basic_info.title;
 
     let selectedFormat: any;
     if (format === 'audio') {
-      selectedFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio', filter: 'audioonly' });
+      const audioFormats = info.streaming_data?.adaptive_formats?.filter((f: any) => f.has_audio && !f.has_video) || [];
+      selectedFormat = audioFormats[audioFormats.length - 1];
     } else {
-      const formats = info.formats.filter((f: any) => f.hasAudio && f.hasVideo);
-      selectedFormat = formats.find((f: any) => f.qualityLabel === quality || f.itag == quality) || formats[0];
+      const videoFormats = info.streaming_data?.formats?.filter((f: any) => f.has_audio && f.has_video) || [];
+      if (quality) {
+        selectedFormat = videoFormats.find((f: any) => f.quality_label === quality || f.itag == quality);
+      }
+      selectedFormat = selectedFormat || videoFormats[videoFormats.length - 1];
+
+      if (!selectedFormat) {
+        const combined = info.streaming_data?.adaptive_formats?.filter((f: any) => f.has_audio && f.has_video) || [];
+        selectedFormat = combined[combined.length - 1];
+      }
     }
 
     if (!selectedFormat) return NextResponse.json({ success: false, error: 'Format not available' }, { status: 400 });
 
-    const jobId = uuidv4();
-    const title = info.videoDetails.title;
+    const downloadUrl = selectedFormat.url || selectedFormat.decipher?.(youtube.session.player);
 
-    await getClient().execute({
-      sql: 'INSERT INTO downloads (id, url, title, format, quality, file_size, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      args: [jobId, url, title, format || 'video', quality || 'highest', parseInt(selectedFormat.contentLength || '0'), 'completed'],
-    });
+    if (!downloadUrl) return NextResponse.json({ success: false, error: 'Cannot generate download URL' }, { status: 500 });
 
     return NextResponse.json({
       success: true,
       data: {
-        jobId,
+        jobId: videoId,
         title,
-        format: selectedFormat.container,
-        fileSize: parseInt(selectedFormat.contentLength || '0'),
-        downloadUrl: selectedFormat.url,
+        format: selectedFormat.mimeType?.split('/')[1]?.split(';')[0] || 'mp4',
+        fileSize: parseInt(selectedFormat.content_length || '0'),
+        downloadUrl,
       },
     });
   } catch (err: any) {
