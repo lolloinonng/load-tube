@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getClient } from '@/lib/db';
+import { getClient, initDb } from '@/lib/db';
 import { signToken, verifyGoogleCredential } from '@/lib/auth-api';
 
 export async function POST(req: NextRequest) {
@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
 
     const { email, googleId } = await verifyGoogleCredential(credential);
     const client = getClient();
+    await initDb();
     const user = await client.execute({ sql: 'SELECT * FROM users WHERE email = ?', args: [email] });
     if (user.rows.length === 0) return NextResponse.json({ success: false, error: 'Accesso non autorizzato' }, { status: 403 });
 
