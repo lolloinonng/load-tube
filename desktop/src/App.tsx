@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { UrlInput } from '@/components/features/UrlInput';
 import { VideoInfo } from '@/components/features/VideoInfo';
@@ -15,7 +15,21 @@ export default function App() {
   const [downloading, setDownloading] = useState(false);
   const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const downloadRef = useRef<HTMLButtonElement>(null);
+  const convertRef = useRef<HTMLButtonElement>(null);
   const currentUrlRef = useRef('');
+
+  useEffect(() => {
+    const btn = tab === 'download' ? downloadRef.current : convertRef.current;
+    const container = containerRef.current;
+    if (btn && container) {
+      const cr = container.getBoundingClientRect();
+      const br = btn.getBoundingClientRect();
+      setPillStyle({ left: br.left - cr.left, width: br.width });
+    }
+  }, [tab]);
 
   const handleAnalyze = useCallback(async (url: string) => {
     setAnalyzing(true);
@@ -39,20 +53,17 @@ export default function App() {
 
   const handleDownload = useCallback(async (format: string, quality: string) => {
     const url = currentUrlRef.current;
-    if (!url) return;
+    if (!url || !metadata) return;
     setDownloading(true);
     setError(null);
 
     try {
-      const formatObj = metadata?.formats.find(f => f.quality === quality);
-      const itag = formatObj?.itag || quality;
+      const itag = metadata.formats.find(f => f.quality === quality)?.itag || quality;
       const res = await window.electronAPI.downloadVideo(url, itag);
       if (res.success) {
         toast.success('Download completato!');
-      } else {
-        if (res.error !== 'Salvataggio annullato') {
-          setError(res.error || 'Download fallito');
-        }
+      } else if (res.error !== 'Salvataggio annullato') {
+        setError(res.error || 'Download fallito');
       }
     } catch (err: any) {
       setError(err.message || 'Download fallito');
@@ -65,23 +76,37 @@ export default function App() {
     <div className="min-h-screen flex flex-col">
       <CursorGlow />
       <header className="w-full bg-[#1a1a1a] py-3 px-6 sticky top-0 z-40">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
-          <a className="font-bold text-white tracking-tight shrink-0" style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)' }} href="/">load.tube</a>
-          <div className="flex items-center bg-[#121212] rounded-full p-0.5">
+        <div className="relative flex items-center justify-between max-w-[720px] mx-auto">
+          <span className="font-bold text-white tracking-tight shrink-0" style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)' }}>
+            load.tube
+          </span>
+          <div ref={containerRef} className="absolute left-1/2 -translate-x-1/2 flex items-center rounded-full bg-[#121212] p-0.5">
+            <div
+              className="absolute top-0.5 bottom-0.5 rounded-full bg-[#8B5CF6]"
+              style={{ left: pillStyle.left, width: pillStyle.width, transition: 'left 400ms cubic-bezier(0.16, 1, 0.3, 1), width 400ms cubic-bezier(0.16, 1, 0.3, 1)' }}
+            />
             <button
+              ref={downloadRef}
               onClick={() => { setTab('download'); setMetadata(null); setError(null); }}
-              className={`relative z-10 flex h-9 w-24 items-center justify-center rounded-full text-xs font-bold tracking-wider spring-transition ${tab === 'download' ? 'text-[#1b1c1d]' : 'text-gray-400 hover:text-white'}`}
-              style={tab === 'download' ? { background: 'linear-gradient(to right, #DDD6FE, #8B5CF6)' } : {}}
+              className={`relative z-10 flex h-9 w-16 items-center justify-center rounded-full transition ${tab === 'download' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
             >
-              Download
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
             </button>
             <button
+              ref={convertRef}
               onClick={() => { setTab('convert'); setMetadata(null); setError(null); }}
-              className={`relative z-10 flex h-9 w-24 items-center justify-center rounded-full text-xs font-bold tracking-wider spring-transition ${tab === 'convert' ? 'text-[#1b1c1d]' : 'text-gray-400 hover:text-white'}`}
-              style={tab === 'convert' ? { background: 'linear-gradient(to right, #DDD6FE, #8B5CF6)' } : {}}
+              className={`relative z-10 flex h-9 w-16 items-center justify-center rounded-full transition ${tab === 'convert' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
             >
-              Converti
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
             </button>
+          </div>
+          <div className="flex items-center gap-5">
+            <span className="text-sm text-gray-400 spring-transition cursor-default">FAQ</span>
+            <span className="text-sm text-gray-400 spring-transition cursor-default">Contact</span>
           </div>
         </div>
       </header>
@@ -149,7 +174,7 @@ export default function App() {
                   Converti file
                 </h1>
                 <p className="text-sm text-on-surface-variant mt-3 leading-relaxed text-center max-w-md mx-auto">
-                  Seleziona un file e scegli il formato di output. La conversione avviene localmente sul tuo PC.
+                  Seleziona un file e scegli il formato di output.
                 </p>
                 <div className="mt-8">
                   <ConvertPanel />
@@ -160,11 +185,14 @@ export default function App() {
         </div>
       </main>
 
-      <footer className="w-full py-8 bg-transparent max-w-4xl mx-auto flex flex-col items-center gap-4 px-6 z-40 relative">
+      <footer className="w-full py-8 bg-transparent max-w-[720px] mx-auto flex flex-col items-center gap-4 px-6 z-40 relative">
         <div className="font-bold text-xl text-primary tracking-tight">load.tube</div>
-        <div className="font-label-caps text-xs text-on-surface-variant/50 mt-2">
-          load.tube Desktop — Tutto in locale, niente server
+        <div className="flex gap-6">
+          <span className="font-label-caps text-xs text-on-surface-variant/70 spring-transition cursor-default">Privacy</span>
+          <span className="font-label-caps text-xs text-on-surface-variant/70 spring-transition cursor-default">Terms</span>
+          <span className="font-label-caps text-xs text-on-surface-variant/70 spring-transition cursor-default">Support</span>
         </div>
+        <div className="font-label-caps text-xs text-on-surface-variant/50 mt-2">&copy; 2026 load.tube. Crafted with care.</div>
       </footer>
 
       <Toaster
