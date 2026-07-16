@@ -9,6 +9,9 @@ on:
 permissions:
   contents: write
 
+env:
+  CSC_IDENTITY_AUTO_DISCOVERY: false
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -36,7 +39,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: loadtube-windows
-          path: desktop/release/*.exe
+          path: |
+            desktop/release/*.exe
+            desktop/release/*.Setup*.exe
 
   build-mac:
     runs-on: macos-latest
@@ -55,12 +60,12 @@ jobs:
           chmod +x binaries/yt-dlp
       - name: Download ffmpeg
         run: |
-          curl -L -o ffmpeg-release.zip https://evermeet.cx/ffmpeg/ffmpeg.zip
-          curl -L -o ffprobe.zip https://evermeet.cx/ffmpeg/ffprobe.zip
-          unzip -o ffmpeg.zip -d binaries/
-          unzip -o ffprobe.zip -d binaries/
+          curl -L -o ffmpeg.7z https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-macos64-gpl.7z
+          7z x ffmpeg.7z -offmpeg-temp
+          cp ffmpeg-temp/ffmpeg-master-latest-macos64-gpl/bin/ffmpeg binaries/
+          cp ffmpeg-temp/ffmpeg-master-latest-macos64-gpl/bin/ffprobe binaries/
           chmod +x binaries/ffmpeg binaries/ffprobe
-          rm ffmpeg.zip ffprobe.zip
+          rm -rf ffmpeg.7z ffmpeg-temp
       - run: npm ci
       - run: npm run dist:mac
       - uses: actions/upload-artifact@v4

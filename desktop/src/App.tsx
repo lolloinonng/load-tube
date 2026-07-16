@@ -104,10 +104,6 @@ export default function App() {
               </svg>
             </button>
           </div>
-          <div className="flex items-center gap-5">
-            <span className="text-sm text-gray-400 spring-transition cursor-default">FAQ</span>
-            <span className="text-sm text-gray-400 spring-transition cursor-default">Contact</span>
-          </div>
         </div>
       </header>
 
@@ -185,14 +181,9 @@ export default function App() {
         </div>
       </main>
 
-      <footer className="w-full py-8 bg-transparent max-w-[720px] mx-auto flex flex-col items-center gap-4 px-6 z-40 relative">
-        <div className="font-bold text-xl text-primary tracking-tight">load.tube</div>
-        <div className="flex gap-6">
-          <span className="font-label-caps text-xs text-on-surface-variant/70 spring-transition cursor-default">Privacy</span>
-          <span className="font-label-caps text-xs text-on-surface-variant/70 spring-transition cursor-default">Terms</span>
-          <span className="font-label-caps text-xs text-on-surface-variant/70 spring-transition cursor-default">Support</span>
-        </div>
-        <div className="font-label-caps text-xs text-on-surface-variant/50 mt-2">&copy; 2026 load.tube. Crafted with care.</div>
+      <footer className="w-full py-6 bg-transparent max-w-[720px] mx-auto flex flex-col items-center gap-2 px-6 z-40 relative">
+        <div className="font-bold text-lg text-primary tracking-tight">load.tube</div>
+        <div className="font-label-caps text-xs text-on-surface-variant/50">&copy; 2026 load.tube</div>
       </footer>
 
       <Toaster

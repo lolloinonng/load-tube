@@ -16,7 +16,7 @@ function getBinDir() {
   if (app.isPackaged) {
     return path.join(process.resourcesPath, 'binaries');
   }
-  return path.join(__dirname, '../../binaries');
+  return path.join(__dirname, '../binaries');
 }
 
 function getYtdlpPath(): string {

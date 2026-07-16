@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "pack": "electron-builder --dir",
-    "dist:win": "electron-builder --win",
-    "dist:mac": "electron-builder --mac --publish=never",
+    "dist:win": "vite build && electron-builder --win",
+    "dist:mac": "vite build && electron-builder --mac --publish=never",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
@@ -41,7 +41,7 @@
       "dist-electron/**/*"
     ],
     "win": {
-      "target": "nsis"
+      "target": "portable"
     },
     "mac": {
       "target": "dmg",
