@@ -1,0 +1,69 @@
+name: Build Desktop App
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Download yt-dlp
+        run: |
+          New-Item -ItemType Directory -Path binaries -Force
+          curl -L -o binaries/yt-dlp.exe https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe
+      - name: Download ffmpeg
+        run: |
+          curl -L -o ffmpeg-release.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
+          Expand-Archive -Path ffmpeg-release.zip -DestinationPath ffmpeg-temp
+          Copy-Item ffmpeg-temp/ffmpeg-*/bin/ffmpeg.exe binaries/ -Force
+          Copy-Item ffmpeg-temp/ffmpeg-*/bin/ffprobe.exe binaries/ -Force
+          Remove-Item -Recurse -Force ffmpeg-release.zip, ffmpeg-temp
+      - run: npm ci
+      - run: npm run dist:win
+      - uses: actions/upload-artifact@v4
+        with:
+          name: loadtube-windows
+          path: desktop/release/*.exe
+
+  build-mac:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Download yt-dlp
+        run: |
+          mkdir -p binaries
+          curl -L -o binaries/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp
+          chmod +x binaries/yt-dlp
+      - name: Download ffmpeg
+        run: |
+          curl -L -o ffmpeg-release.zip https://evermeet.cx/ffmpeg/ffmpeg.zip
+          curl -L -o ffprobe.zip https://evermeet.cx/ffmpeg/ffprobe.zip
+          unzip -o ffmpeg.zip -d binaries/
+          unzip -o ffprobe.zip -d binaries/
+          chmod +x binaries/ffmpeg binaries/ffprobe
+          rm ffmpeg.zip ffprobe.zip
+      - run: npm ci
+      - run: npm run dist:mac
+      - uses: actions/upload-artifact@v4
+        with:
+          name: loadtube-mac
+          path: desktop/release/*.dmg
