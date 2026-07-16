@@ -1,40 +1,34 @@
 export interface VideoMetadata {
-  videoId: string;
   title: string;
-  description: string;
-  duration: number;
+  duration: string;
   thumbnail: string;
-  channel: string;
-  channelUrl: string;
-  uploadDate: string;
-  availableQualities: QualityOption[];
+  author: string;
+  formats: QualityOption[];
 }
 
 export interface QualityOption {
   itag: number;
   quality: string;
   container: string;
-  fps?: number;
+  contentLength?: string;
   hasAudio: boolean;
   hasVideo: boolean;
-  contentLength?: string;
-  label: string;
 }
 
 export interface AnalyzeResponse {
   success: boolean;
   data?: VideoMetadata;
   error?: string;
-  code?: string;
 }
 
 export interface DownloadResponse {
   success: boolean;
   data?: {
     jobId: string;
-    downloadUrl: string;
-    fileName: string;
+    title: string;
+    format: string;
     fileSize: number;
+    downloadUrl: string;
   };
   error?: string;
 }
@@ -44,12 +38,8 @@ export interface DownloadStatus {
   title: string;
   format: string;
   quality: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  progress: number;
-  fileName?: string;
+  status: string;
   fileSize?: number;
-  error?: string;
-  createdAt: string;
 }
 
 export interface AdminStats {
@@ -59,12 +49,9 @@ export interface AdminStats {
   serverStatus: {
     uptime: number;
     memoryUsage: string;
-    cpuUsage: string;
   };
   cache: {
     keys: number;
-    hits: number;
-    misses: number;
   };
 }
 
@@ -75,19 +62,3 @@ export interface AdminLog {
   ip?: string;
   createdAt: string;
 }
-
-export type ErrorCode =
-  | 'INVALID_URL'
-  | 'PRIVATE_VIDEO'
-  | 'AGE_RESTRICTED'
-  | 'UNAVAILABLE'
-  | 'LIVE_STREAM'
-  | 'NETWORK_TIMEOUT'
-  | 'CONVERSION_FAILURE'
-  | 'RATE_LIMITED'
-  | 'INTERNAL_ERROR';
-
-export type VideoFormat = 'mp4';
-export type AudioFormat = 'mp3';
-export type VideoQuality = '360p' | '480p' | '720p' | '1080p';
-export type AudioQuality = '64' | '128' | '192' | '320';

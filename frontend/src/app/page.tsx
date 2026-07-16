@@ -7,7 +7,6 @@ import { VideoInfo } from '@/components/features/VideoInfo';
 import { FormatSelector } from '@/components/features/FormatSelector';
 import { DownloadProgress } from '@/components/features/DownloadProgress';
 import { useMediaFetch } from '@/hooks/useMediaFetch';
-import { getErrorCodeMessage } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
 
 export default function HomePage() {
@@ -69,13 +68,7 @@ export default function HomePage() {
   };
 
   const handleDownload = (format: string, quality: string) => {
-    if (metadata) {
-      download(
-        `https://www.youtube.com/watch?v=${metadata.videoId}`,
-        format,
-        quality
-      );
-    }
+    if (metadata) download(format, quality);
   };
 
   if (authLoading) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import type { VideoMetadata, VideoQuality, AudioQuality } from '@/types';
+import type { VideoMetadata } from '@/types';
 
 interface FormatSelectorProps {
   metadata: VideoMetadata;
@@ -28,11 +28,12 @@ export function FormatSelector({ metadata, onDownload, downloading }: FormatSele
     }
   }, [tab]);
 
-  const videoQualities: VideoQuality[] = ['360p', '480p', '720p', '1080p'];
-  const audioQualities: AudioQuality[] = ['64', '128', '192', '320'];
+  const videoQualities = ['360p', '480p', '720p', '1080p'];
+  const audioQualities = ['64', '128', '192', '320'];
 
   const hasQuality = (quality: string) => {
-    return metadata.availableQualities.some((q) => q.quality.includes(quality.replace('p', '')));
+    const num = quality.replace('p', '');
+    return metadata.formats.some((f) => f.quality.includes(num));
   };
 
   const handleDownload = () => {

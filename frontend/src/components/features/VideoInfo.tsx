@@ -2,10 +2,20 @@
 
 import Image from 'next/image';
 import type { VideoMetadata } from '@/types';
-import { formatDuration, formatDate } from '@/lib/utils';
 
 interface VideoInfoProps {
   metadata: VideoMetadata;
+}
+
+function parseDuration(dur: string): string {
+  const match = dur.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+  if (!match) return dur;
+  const h = (match[1] || '').replace('H', '');
+  const m = (match[2] || '').replace('M', '');
+  const s = (match[3] || '').replace('S', '');
+  const parts = [m.padStart(2, '0'), s.padStart(2, '0')];
+  if (h) parts.unshift(h.padStart(2, '0'));
+  return parts.join(':');
 }
 
 export function VideoInfo({ metadata }: VideoInfoProps) {
@@ -21,7 +31,7 @@ export function VideoInfo({ metadata }: VideoInfoProps) {
             sizes="(max-width: 768px) 100vw, 240px"
           />
           <div className="absolute bottom-2 right-2 bg-inverse-surface/80 text-inverse-on-surface text-[11px] font-bold px-2 py-1 rounded backdrop-blur-md tracking-wider">
-            {formatDuration(metadata.duration)}
+            {parseDuration(metadata.duration)}
           </div>
         </div>
         <div className="w-full md:w-2/3 flex flex-col justify-between">
@@ -33,20 +43,14 @@ export function VideoInfo({ metadata }: VideoInfoProps) {
               <span className="material-symbols-outlined hand-drawn-icon" style={{ fontSize: '14px' }}>
                 person
               </span>
-              {metadata.channel}
+              {metadata.author}
             </p>
             <div className="flex gap-3 mt-3">
               <span className="text-xs text-on-surface-variant/60 flex items-center gap-1">
                 <span className="material-symbols-outlined hand-drawn-icon" style={{ fontSize: '12px' }}>
-                  calendar_today
-                </span>
-                {formatDate(metadata.uploadDate)}
-              </span>
-              <span className="text-xs text-on-surface-variant/60 flex items-center gap-1">
-                <span className="material-symbols-outlined hand-drawn-icon" style={{ fontSize: '12px' }}>
                   quality
                 </span>
-                {metadata.availableQualities.length} formati
+                {metadata.formats.length} formati
               </span>
             </div>
           </div>

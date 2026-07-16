@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { VideoMetadata, DownloadStatus } from '@/types';
-import { analyzeUrl, startDownload, getDownloadStatus, getDownloadFileUrl } from '@/lib/api';
-import { getErrorCodeMessage } from '@/lib/utils';
+import { analyzeUrl, startDownload } from '@/lib/api';
 
 interface UseMediaFetchReturn {
   loading: boolean;
@@ -13,8 +12,7 @@ interface UseMediaFetchReturn {
   downloadStatus: DownloadStatus | null;
   error: string | null;
   analyze: (url: string) => Promise<void>;
-  download: (url: string, format: string, quality: string) => Promise<void>;
-  pollStatus: (jobId: string) => Promise<void>;
+  download: (format: string, quality: string) => Promise<void>;
   reset: () => void;
 }
 
@@ -25,19 +23,21 @@ export function useMediaFetch(): UseMediaFetchReturn {
   const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
   const [downloadStatus, setDownloadStatus] = useState<DownloadStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const currentUrlRef = useRef<string>('');
 
   const analyze = useCallback(async (url: string) => {
     setAnalyzing(true);
     setError(null);
     setMetadata(null);
     setDownloadStatus(null);
+    currentUrlRef.current = url;
 
     try {
       const response = await analyzeUrl(url);
       if (response.success && response.data) {
         setMetadata(response.data);
       } else {
-        setError(getErrorCodeMessage(response.code));
+        setError(response.error || 'Analysis failed');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
@@ -47,67 +47,41 @@ export function useMediaFetch(): UseMediaFetchReturn {
     }
   }, []);
 
-  const pollStatus = useCallback(async (jobId: string) => {
-    const maxAttempts = 60;
-    const interval = 1000;
-
-    for (let i = 0; i < maxAttempts; i++) {
-      await new Promise((resolve) => setTimeout(resolve, interval));
-
-      try {
-        const response = await getDownloadStatus(jobId);
-        if (response.success && response.data) {
-          setDownloadStatus(response.data);
-
-          if (response.data.status === 'completed' || response.data.status === 'failed') {
-            if (response.data.status === 'completed' && response.data.fileSize && response.data.fileSize > 0) {
-              await new Promise((r) => setTimeout(r, 500));
-              const fileUrl = getDownloadFileUrl(jobId);
-              const a = document.createElement('a');
-              a.href = fileUrl;
-              a.download = response.data.fileName || 'download';
-              a.style.display = 'none';
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-            }
-            return;
-          }
-        }
-      } catch {
-        // Continue polling
-      }
-    }
-
-    setError('Download timed out');
-  }, []);
-
-  const download = useCallback(async (url: string, format: string, quality: string) => {
+  const download = useCallback(async (format: string, quality: string) => {
+    const url = currentUrlRef.current;
+    if (!url) return;
     setDownloading(true);
     setError(null);
 
     try {
       const response = await startDownload(url, format, quality);
       if (response.success && response.data) {
+        const { jobId, downloadUrl, title } = response.data;
         setDownloadStatus({
-          id: response.data.jobId,
-          title: '',
+          id: jobId,
+          title,
           format,
           quality,
-          status: 'pending',
-          progress: 0,
-          createdAt: new Date().toISOString(),
+          status: 'completed',
+          fileSize: response.data.fileSize || 0,
         });
-        await pollStatus(response.data.jobId);
+
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `${title || 'video'}.${format}`;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
       } else {
-        setError(getErrorCodeMessage());
+        setError(response.error || 'Download failed');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Download failed');
     } finally {
       setDownloading(false);
     }
-  }, [pollStatus]);
+  }, []);
 
   const reset = useCallback(() => {
     setMetadata(null);
@@ -115,18 +89,8 @@ export function useMediaFetch(): UseMediaFetchReturn {
     setError(null);
     setAnalyzing(false);
     setDownloading(false);
+    currentUrlRef.current = '';
   }, []);
 
-  return {
-    loading,
-    analyzing,
-    downloading,
-    metadata,
-    downloadStatus,
-    error,
-    analyze,
-    download,
-    pollStatus,
-    reset,
-  };
+  return { loading, analyzing, downloading, metadata, downloadStatus, error, analyze, download, reset };
 }
